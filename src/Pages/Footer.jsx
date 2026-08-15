@@ -22,6 +22,11 @@ const Footer = () => {
 										TIM PPLG3
 									</a>
 								</li>
+								<li className="mb-2">
+									<a href="/Changelog" className="hover:underline">
+										Changelog
+									</a>
+								</li>
 							</ul>
 						</div>
 						<div className="">

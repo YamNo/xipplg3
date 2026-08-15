@@ -50,7 +50,7 @@ export default function ButtonRequest() {
 		<div>
 			<button
 				onClick={handleOpen}
-				className="flex items-center space-x-2 text-white px-6 py-4"
+				className="flex items-center justify-center space-x-2 text-white px-6 py-4"
 				id="SendRequest">
 				<span className="text-base lg:text-1xl">Request</span>
 				<img src="/Request.png" alt="Icon" className="w-6 h-6" />

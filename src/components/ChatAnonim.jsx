@@ -12,6 +12,7 @@ function Chat() {
   const [userIp, setUserIp] = useState("");
   const [messageCount, setMessageCount] = useState(0);
   const [isSending, setIsSending] = useState(false);
+  const [isLoadingChat, setIsLoadingChat] = useState(true);
   const SEND_COOLDOWN_MS = 3000;
 
   const chatsCollectionRef = collection(db, "chats");
@@ -41,9 +42,13 @@ function Chat() {
         };
       });
       setMessages(newMessages);
+      setIsLoadingChat(false);
       if (shouldScrollToBottom) {
         scrollToBottom();
       }
+    }, (error) => {
+      console.error("Gagal memuat pesan:", error);
+      setIsLoadingChat(false);
     });
 
     return () => {
@@ -205,12 +210,21 @@ function Chat() {
       </div>
 
       <div className="mt-5" id="KotakPesan" style={{ overflowY: "auto" }}>
-        {messages.map((msg, index) => (
-          <div key={index} className="flex items-start text-sm py-[1%]">
-            <img src={msg.sender.image} alt="User Profile" className="h-7 w-7 mr-2 " />
-            <div className="relative top-[0.30rem]">{msg.message}</div>
-          </div>
-        ))}
+        {isLoadingChat
+          ? [0, 1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center text-sm py-[1%]">
+                <div className="Skeleton h-7 w-7 mr-2 rounded-full shrink-0"></div>
+                <div
+                  className="Skeleton h-4"
+                  style={{ width: `${55 + ((i * 13) % 35)}%` }}></div>
+              </div>
+            ))
+          : messages.map((msg, index) => (
+              <div key={index} className="flex items-start text-sm py-[1%]">
+                <img src={msg.sender.image} alt="User Profile" className="h-7 w-7 mr-2 " />
+                <div className="relative top-[0.30rem]">{msg.message}</div>
+              </div>
+            ))}
         <div ref={messagesEndRef}></div>
       </div>
       <div id="InputChat" className="flex items-center mt-5">

@@ -13,6 +13,7 @@ import { useSpring, animated } from "@react-spring/web" // Import the necessary 
 
 const Carousel = () => {
 	const [images, setImages] = useState([])
+	const [isLoading, setIsLoading] = useState(true)
 	const [open, setOpen] = useState(false)
 	const [selectedImage, setSelectedImage] = useState(null)
 
@@ -33,6 +34,8 @@ const Carousel = () => {
 			setImages(imageURLs)
 		} catch (error) {
 			console.error("Error fetching approved images from Firestore:", error)
+		} finally {
+			setIsLoading(false)
 		}
 	}
 
@@ -41,6 +44,8 @@ const Carousel = () => {
 	}, [])
 
 	// Mobile: slidesToShow selalu 1, jadi carousel aman dipakai selama foto > 1.
+	// accessibility: false mematikan pengaturan fokus bawaan slick yang memicu
+	// warning "aria-hidden on an element because its descendant retained focus".
 	const mobileSettings = {
 		centerMode: true,
 		centerPadding: "50px",
@@ -51,6 +56,7 @@ const Carousel = () => {
 		autoplaySpeed: 2000,
 		dots: false,
 		arrows: false,
+		accessibility: false,
 	}
 
 	// Desktop: slidesToShow 3, carousel cuma aman dipakai kalau foto > 3
@@ -64,6 +70,7 @@ const Carousel = () => {
 		autoplay: true,
 		autoplaySpeed: 2000,
 		dots: true,
+		accessibility: false,
 	}
 
 	const handleImageClick = (imageUrl) => {
@@ -82,7 +89,13 @@ const Carousel = () => {
 				Class Gallery
 			</div>
 			<div id="Carousel">
-				{images.length === 0 ? null : (
+				{isLoading ? (
+					<div className="flex flex-wrap justify-center gap-6 px-[10%]">
+						<div className="Skeleton h-[300px] w-[300px]"></div>
+						<div className="Skeleton h-[300px] w-[300px] hidden lg:block"></div>
+						<div className="Skeleton h-[300px] w-[300px] hidden lg:block"></div>
+					</div>
+				) : images.length === 0 ? null : (
 					<>
 						{/* Mobile */}
 						<div className="lg:hidden">
@@ -98,13 +111,17 @@ const Carousel = () => {
 							) : (
 								<Slider {...mobileSettings}>
 									{images.map((imageUrl, index) => (
-										<div key={index} className="flex justify-center">
-											<img
-												src={imageUrl}
-												alt={`Image ${index}`}
-												onClick={() => handleImageClick(imageUrl)}
-												style={{ cursor: "pointer" }}
-											/>
+										// Div luar dipakai slick (dipaksa display:inline-block),
+										// jadi centering harus di div dalam supaya tidak ditimpa.
+										<div key={index}>
+											<div className="flex justify-center">
+												<img
+													src={imageUrl}
+													alt={`Image ${index}`}
+													onClick={() => handleImageClick(imageUrl)}
+													style={{ cursor: "pointer" }}
+												/>
+											</div>
 										</div>
 									))}
 								</Slider>
@@ -128,13 +145,15 @@ const Carousel = () => {
 							) : (
 								<Slider {...desktopSettings}>
 									{images.map((imageUrl, index) => (
-										<div key={index} className="flex justify-center">
-											<img
-												src={imageUrl}
-												alt={`Image ${index}`}
-												onClick={() => handleImageClick(imageUrl)}
-												style={{ cursor: "pointer" }}
-											/>
+										<div key={index}>
+											<div className="flex justify-center">
+												<img
+													src={imageUrl}
+													alt={`Image ${index}`}
+													onClick={() => handleImageClick(imageUrl)}
+													style={{ cursor: "pointer" }}
+												/>
+											</div>
 										</div>
 									))}
 								</Slider>

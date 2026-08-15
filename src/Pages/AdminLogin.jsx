@@ -25,6 +25,14 @@ const AdminLogin = () => {
 	const [taskSubject, setTaskSubject] = useState("")
 	const [taskDescription, setTaskDescription] = useState("")
 	const [taskDeadline, setTaskDeadline] = useState("")
+	const [announcements, setAnnouncements] = useState([])
+	const [announcementText, setAnnouncementText] = useState("")
+	const [birthdays, setBirthdays] = useState([])
+	const [birthdayName, setBirthdayName] = useState("")
+	const [birthdayDate, setBirthdayDate] = useState("")
+	const [events, setEvents] = useState([])
+	const [eventTitle, setEventTitle] = useState("")
+	const [eventDate, setEventDate] = useState("")
 
 	const fetchImages = async () => {
 		setLoading(true)
@@ -49,12 +57,95 @@ const AdminLogin = () => {
 		}
 	}
 
+	const fetchAnnouncements = async () => {
+		try {
+			const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"))
+			const snapshot = await getDocs(q)
+			setAnnouncements(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })))
+		} catch (err) {
+			console.error(err)
+		}
+	}
+
+	const fetchBirthdays = async () => {
+		try {
+			const q = query(collection(db, "birthdays"), orderBy("date", "asc"))
+			const snapshot = await getDocs(q)
+			setBirthdays(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })))
+		} catch (err) {
+			console.error(err)
+		}
+	}
+
+	const fetchEvents = async () => {
+		try {
+			const q = query(collection(db, "events"), orderBy("date", "asc"))
+			const snapshot = await getDocs(q)
+			setEvents(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })))
+		} catch (err) {
+			console.error(err)
+		}
+	}
+
 	useEffect(() => {
 		if (authed) {
 			fetchImages()
 			fetchTasks()
+			fetchAnnouncements()
+			fetchBirthdays()
+			fetchEvents()
 		}
 	}, [authed])
+
+	const addAnnouncement = async (e) => {
+		e.preventDefault()
+		if (!announcementText.trim()) return
+		await addDoc(collection(db, "announcements"), {
+			text: announcementText.trim(),
+			createdAt: serverTimestamp(),
+		})
+		setAnnouncementText("")
+		fetchAnnouncements()
+	}
+
+	const deleteAnnouncement = async (id) => {
+		await deleteDoc(doc(db, "announcements", id))
+		fetchAnnouncements()
+	}
+
+	const addBirthday = async (e) => {
+		e.preventDefault()
+		if (!birthdayName.trim() || !birthdayDate) return
+		await addDoc(collection(db, "birthdays"), {
+			name: birthdayName.trim(),
+			date: birthdayDate,
+		})
+		setBirthdayName("")
+		setBirthdayDate("")
+		fetchBirthdays()
+	}
+
+	const deleteBirthday = async (id) => {
+		await deleteDoc(doc(db, "birthdays", id))
+		fetchBirthdays()
+	}
+
+	const addEvent = async (e) => {
+		e.preventDefault()
+		if (!eventTitle.trim() || !eventDate) return
+		await addDoc(collection(db, "events"), {
+			title: eventTitle.trim(),
+			date: eventDate,
+		})
+		setEventTitle("")
+		setEventDate("")
+		fetchEvents()
+	}
+
+	const deleteEvent = async (id) => {
+		await deleteDoc(doc(db, "events", id))
+		fetchEvents()
+	}
 
 	const addTask = async (e) => {
 		e.preventDefault()
@@ -210,7 +301,7 @@ const AdminLogin = () => {
 							Tambah Tugas
 						</button>
 					</form>
-					<div className="flex flex-col gap-3">
+					<div className="flex flex-col gap-3 mb-10">
 						{tasks.length === 0 && <p className="opacity-50 text-sm">Belum ada tugas.</p>}
 						{tasks.map((task) => (
 							<div
@@ -223,6 +314,127 @@ const AdminLogin = () => {
 								</div>
 								<button
 									onClick={() => deleteTask(task.id)}
+									className="px-3 py-1 text-sm rounded-lg bg-red-600 hover:bg-red-700 shrink-0">
+									Hapus
+								</button>
+							</div>
+						))}
+					</div>
+
+					<h2 className="text-lg font-semibold mb-3">Pengumuman</h2>
+					<form
+						onSubmit={addAnnouncement}
+						className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-2 mb-4">
+						<textarea
+							value={announcementText}
+							onChange={(e) => setAnnouncementText(e.target.value)}
+							placeholder="Isi pengumuman (misal: Besok ulangan Matematika)"
+							rows={2}
+							className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none text-sm resize-none"
+						/>
+						<button
+							type="submit"
+							className="py-2 rounded-lg bg-white text-black font-semibold text-sm hover:bg-gray-200">
+							Tambah Pengumuman
+						</button>
+					</form>
+					<div className="flex flex-col gap-3 mb-10">
+						{announcements.length === 0 && (
+							<p className="opacity-50 text-sm">Belum ada pengumuman.</p>
+						)}
+						{announcements.map((item) => (
+							<div
+								key={item.id}
+								className="bg-white/5 border border-white/10 rounded-xl p-3 flex gap-3 items-center">
+								<p className="flex-1 min-w-0 text-sm break-words">{item.text}</p>
+								<button
+									onClick={() => deleteAnnouncement(item.id)}
+									className="px-3 py-1 text-sm rounded-lg bg-red-600 hover:bg-red-700 shrink-0">
+									Hapus
+								</button>
+							</div>
+						))}
+					</div>
+
+					<h2 className="text-lg font-semibold mb-3">Ulang Tahun</h2>
+					<form
+						onSubmit={addBirthday}
+						className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-2 mb-4">
+						<input
+							type="text"
+							value={birthdayName}
+							onChange={(e) => setBirthdayName(e.target.value)}
+							placeholder="Nama siswa"
+							className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none text-sm"
+						/>
+						<input
+							type="date"
+							value={birthdayDate}
+							onChange={(e) => setBirthdayDate(e.target.value)}
+							className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none text-sm"
+						/>
+						<button
+							type="submit"
+							className="py-2 rounded-lg bg-white text-black font-semibold text-sm hover:bg-gray-200">
+							Tambah Ulang Tahun
+						</button>
+					</form>
+					<div className="flex flex-col gap-3 mb-10">
+						{birthdays.length === 0 && (
+							<p className="opacity-50 text-sm">Belum ada data ulang tahun.</p>
+						)}
+						{birthdays.map((b) => (
+							<div
+								key={b.id}
+								className="bg-white/5 border border-white/10 rounded-xl p-3 flex gap-3 items-center">
+								<div className="flex-1 min-w-0">
+									<p className="font-semibold">{b.name}</p>
+									<p className="text-xs opacity-40">{b.date}</p>
+								</div>
+								<button
+									onClick={() => deleteBirthday(b.id)}
+									className="px-3 py-1 text-sm rounded-lg bg-red-600 hover:bg-red-700 shrink-0">
+									Hapus
+								</button>
+							</div>
+						))}
+					</div>
+
+					<h2 className="text-lg font-semibold mb-3">Acara / Countdown</h2>
+					<form
+						onSubmit={addEvent}
+						className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-2 mb-4">
+						<input
+							type="text"
+							value={eventTitle}
+							onChange={(e) => setEventTitle(e.target.value)}
+							placeholder="Nama acara (misal: Ujian Akhir Semester)"
+							className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none text-sm"
+						/>
+						<input
+							type="date"
+							value={eventDate}
+							onChange={(e) => setEventDate(e.target.value)}
+							className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none text-sm"
+						/>
+						<button
+							type="submit"
+							className="py-2 rounded-lg bg-white text-black font-semibold text-sm hover:bg-gray-200">
+							Tambah Acara
+						</button>
+					</form>
+					<div className="flex flex-col gap-3">
+						{events.length === 0 && <p className="opacity-50 text-sm">Belum ada acara.</p>}
+						{events.map((ev) => (
+							<div
+								key={ev.id}
+								className="bg-white/5 border border-white/10 rounded-xl p-3 flex gap-3 items-center">
+								<div className="flex-1 min-w-0">
+									<p className="font-semibold">{ev.title}</p>
+									<p className="text-xs opacity-40">{ev.date}</p>
+								</div>
+								<button
+									onClick={() => deleteEvent(ev.id)}
 									className="px-3 py-1 text-sm rounded-lg bg-red-600 hover:bg-red-700 shrink-0">
 									Hapus
 								</button>

@@ -4,6 +4,7 @@ import Carousel from "./Pages/Gallery"
 import FullWidthTabs from "./Pages/Tabs"
 import Footer from "./Pages/Footer"
 import Chat from "./components/ChatAnonim"
+import NotifPopup from "./components/NotifPopup"
 import AOS from "aos"
 import "aos/dist/aos.css"
 
@@ -15,6 +16,8 @@ function App() {
 
 	return (
 		<>
+			<NotifPopup />
+
 			<Home />
 
 			<Carousel />

@@ -196,6 +196,64 @@ body {
 	filter: brightness(0) invert(1);
 }
 
+.InfoCard {
+	padding: 16px 20px;
+	width: 100%;
+	border-radius: 16px;
+	background: rgba(255, 255, 255, 0.14);
+	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(2px);
+	-webkit-backdrop-filter: blur(2px);
+	border: 1px solid rgba(255, 255, 255, 0.09);
+	text-align: left;
+}
+
+.NotifPopup-in {
+	animation: notif-slide-in 0.4s ease-out both;
+}
+
+.NotifPopup-out {
+	animation: notif-slide-out 0.4s ease-in both;
+}
+
+@keyframes notif-slide-in {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -16px);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, 0);
+	}
+}
+
+@keyframes notif-slide-out {
+	from {
+		opacity: 1;
+		transform: translate(-50%, 0);
+	}
+	to {
+		opacity: 0;
+		transform: translate(-50%, -16px);
+	}
+}
+
+.Skeleton {
+	background: rgba(255, 255, 255, 0.08);
+	border-radius: 10px;
+	animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.45;
+	}
+}
+
 #TotalSiswa {
 	width: 100%;
 	margin: 0 auto;
@@ -245,8 +303,12 @@ body {
 }
 
 #Carousel img {
-	height: 300px;
 	width: 300px;
+	/* Di layar sempit slot slide bisa < 300px, jadi foto harus ikut mengecil
+	   supaya tidak meluber keluar slide dan terlihat bergeser. */
+	max-width: 100%;
+	aspect-ratio: 1 / 1;
+	height: auto;
 	object-fit: cover;
 	border-radius: 16px;
 	border: 1px solid rgba(255, 255, 255, 0.09);
@@ -269,6 +331,7 @@ body {
 #SendRequest {
 	text-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 255, 255, 0.5),
 		0 0 15px rgba(255, 255, 255, 0.5);
+	min-width: 160px;
 	/* From https://css.glass */
 	background: rgba(255, 255, 255, 0.14);
 	border-radius: 15pt;
