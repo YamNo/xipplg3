@@ -4,7 +4,8 @@ import "slick-carousel/slick/slick.css"
 import "slick-carousel/slick/slick-theme.css"
 import ButtonSend from "../components/ButtonSend"
 import ButtonRequest from "../components/ButtonRequest"
-import { getStorage, ref, listAll, getDownloadURL } from "firebase/storage"
+import { db } from "../firebase"
+import { collection, query, orderBy, getDocs } from "firebase/firestore"
 import Modal from "@mui/material/Modal"
 import { Box, IconButton } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
@@ -23,21 +24,15 @@ const Carousel = () => {
 	// Fungsi untuk mengambil daftar gambar dari Firebase Storage
 	const fetchImagesFromFirebase = async () => {
 		try {
-			const storage = getStorage() // Mendapatkan referensi Firebase Storage
-			const storageRef = ref(storage, "GambarAman/") // Menggunakan ref dengan storage
-
-			const imagesList = await listAll(storageRef) // Menggunakan listAll untuk mendapatkan daftar gambar
-
-			const imageURLs = await Promise.all(
-				imagesList.items.map(async (item) => {
-					const url = await getDownloadURL(item) // Menggunakan getDownloadURL untuk mendapatkan URL gambar
-					return url
-				}),
-			)
+			const imagesQuery = query(collection(db, "images"), orderBy("createdAt", "asc"))
+			const snapshot = await getDocs(imagesQuery)
+			const imageURLs = snapshot.docs
+				.filter((doc) => doc.data().status === "approved")
+				.map((doc) => doc.data().url)
 
 			setImages(imageURLs)
 		} catch (error) {
-			console.error("Error fetching images from Firebase Storage:", error)
+			console.error("Error fetching approved images from Firestore:", error)
 		}
 	}
 
@@ -45,36 +40,30 @@ const Carousel = () => {
 		fetchImagesFromFirebase()
 	}, [])
 
-	const settings = {
+	// Mobile: slidesToShow selalu 1, jadi carousel aman dipakai selama foto > 1.
+	const mobileSettings = {
+		centerMode: true,
+		centerPadding: "50px",
+		slidesToShow: 1,
+		slidesToScroll: 1,
+		infinite: true,
+		autoplay: true,
+		autoplaySpeed: 2000,
+		dots: false,
+		arrows: false,
+	}
+
+	// Desktop: slidesToShow 3, carousel cuma aman dipakai kalau foto > 3
+	// (react-slick berantakan saat slidesToShow >= jumlah slide asli).
+	const desktopSettings = {
 		centerMode: true,
 		centerPadding: "30px",
 		slidesToShow: 3,
 		slidesToScroll: 1,
+		infinite: true,
 		autoplay: true,
 		autoplaySpeed: 2000,
 		dots: true,
-		responsive: [
-			{
-				breakpoint: 768,
-				settings: {
-					arrows: false,
-					centerMode: true,
-					centerPadding: "50px",
-					slidesToShow: 1,
-					dots: false,
-				},
-			},
-			{
-				breakpoint: 480,
-				settings: {
-					arrows: false,
-					centerMode: true,
-					centerPadding: "70px",
-					slidesToShow: 1,
-					dots: false,
-				},
-			},
-		],
 	}
 
 	const handleImageClick = (imageUrl) => {
@@ -93,17 +82,66 @@ const Carousel = () => {
 				Class Gallery
 			</div>
 			<div id="Carousel">
-				<Slider {...settings}>
-					{images.map((imageUrl, index) => (
-						<img
-							key={index}
-							src={imageUrl}
-							alt={`Image ${index}`}
-							onClick={() => handleImageClick(imageUrl)}
-							style={{ cursor: "pointer" }}
-						/>
-					))}
-				</Slider>
+				{images.length === 0 ? null : (
+					<>
+						{/* Mobile */}
+						<div className="lg:hidden">
+							{images.length === 1 ? (
+								<div className="flex justify-center">
+									<img
+										src={images[0]}
+										alt="Image 0"
+										onClick={() => handleImageClick(images[0])}
+										style={{ cursor: "pointer" }}
+									/>
+								</div>
+							) : (
+								<Slider {...mobileSettings}>
+									{images.map((imageUrl, index) => (
+										<div key={index} className="flex justify-center">
+											<img
+												src={imageUrl}
+												alt={`Image ${index}`}
+												onClick={() => handleImageClick(imageUrl)}
+												style={{ cursor: "pointer" }}
+											/>
+										</div>
+									))}
+								</Slider>
+							)}
+						</div>
+
+						{/* Desktop */}
+						<div className="hidden lg:block">
+							{images.length <= 3 ? (
+								<div className="flex flex-wrap justify-center gap-6 px-[10%]">
+									{images.map((imageUrl, index) => (
+										<img
+											key={index}
+											src={imageUrl}
+											alt={`Image ${index}`}
+											onClick={() => handleImageClick(imageUrl)}
+											style={{ cursor: "pointer" }}
+										/>
+									))}
+								</div>
+							) : (
+								<Slider {...desktopSettings}>
+									{images.map((imageUrl, index) => (
+										<div key={index} className="flex justify-center">
+											<img
+												src={imageUrl}
+												alt={`Image ${index}`}
+												onClick={() => handleImageClick(imageUrl)}
+												style={{ cursor: "pointer" }}
+											/>
+										</div>
+									))}
+								</Slider>
+							)}
+						</div>
+					</>
+				)}
 			</div>
 
 			<div className="flex justify-center items-center gap-6 text-base mt-5 lg:mt-8">

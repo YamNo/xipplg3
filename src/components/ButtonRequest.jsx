@@ -5,7 +5,8 @@ import Modal from "@mui/material/Modal"
 import Typography from "@mui/material/Typography"
 import { useSpring, animated } from "@react-spring/web"
 import CloseIcon from "@mui/icons-material/Close"
-import { getStorage, ref, listAll, getDownloadURL, getMetadata } from "firebase/storage"
+import { db } from "../firebase"
+import { collection, query, orderBy, getDocs } from "firebase/firestore"
 
 export default function ButtonRequest() {
 	const [open, setOpen] = useState(false)
@@ -21,32 +22,23 @@ export default function ButtonRequest() {
 
 	const [images, setImages] = useState([])
 
-	// Fungsi untuk mengambil daftar gambar dari Firebase Storage
+	// Fungsi untuk mengambil daftar gambar yang sudah diupload dari Firestore
 	const fetchImagesFromFirebase = async () => {
 		try {
-			const storage = getStorage()
-			const storageRef = ref(storage, "images/")
+			const imagesQuery = query(collection(db, "images"), orderBy("createdAt", "asc"))
+			const snapshot = await getDocs(imagesQuery)
 
-			const imagesList = await listAll(storageRef)
-
-			const imagePromises = imagesList.items.map(async (item) => {
-				const url = await getDownloadURL(item)
-				const metadata = await getMetadata(item)
-
+			const imageURLs = snapshot.docs.map((doc) => {
+				const data = doc.data()
 				return {
-					url,
-					timestamp: metadata.timeCreated,
+					url: data.url,
+					timestamp: data.createdAt?.toMillis() ?? Date.now(),
 				}
 			})
 
-			const imageURLs = await Promise.all(imagePromises)
-
-			// Urutkan array berdasarkan timestamp (dari yang terlama)
-			imageURLs.sort((a, b) => a.timestamp - b.timestamp)
-
 			setImages(imageURLs)
 		} catch (error) {
-			console.error("Error fetching images from Firebase Storage:", error)
+			console.error("Error fetching images from Firestore:", error)
 		}
 	}
 
@@ -60,8 +52,8 @@ export default function ButtonRequest() {
 				onClick={handleOpen}
 				className="flex items-center space-x-2 text-white px-6 py-4"
 				id="SendRequest">
-				<img src="/Request.png" alt="Icon" className="w-6 h-6 relative bottom-1 " />
 				<span className="text-base lg:text-1xl">Request</span>
+				<img src="/Request.png" alt="Icon" className="w-6 h-6" />
 			</button>
 
 			<Modal

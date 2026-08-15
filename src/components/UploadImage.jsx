@@ -1,39 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { storage } from "../firebase";
-import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
-import { v4 as uuidv4 } from "uuid";
+import React, { useState } from "react";
+import { db } from "../firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { uploadToCloudinary } from "../utils/cloudinary";
 import Swal from "sweetalert2";
 
 function UploadImage() {
   const [imageUpload, setImageUpload] = useState(null);
-  const [imageList, setImageList] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
   const maxUploadSizeInBytes = 10 * 1024 * 1024; // 10MB
   const maxUploadsPerDay = 20;
-  
-  useEffect(() => {
-    listImages();
-  }, []);
 
-  const listImages = () => {
-    const imageListRef = ref(storage, "images/");
-    listAll(imageListRef)
-      .then((response) => {
-        const imagePromises = response.items.map((item) => getDownloadURL(item));
-        Promise.all(imagePromises)
-          .then((urls) => {
-            setImageList(urls);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const uploadImage = () => {
-    if (imageUpload == null) return;
+  const uploadImage = async () => {
+    if (imageUpload == null || isUploading) return;
 
     const uploadedImagesCount = parseInt(localStorage.getItem("uploadedImagesCount")) || 0;
     const lastUploadDate = localStorage.getItem("lastUploadDate");
@@ -43,9 +21,9 @@ function UploadImage() {
         icon: "error",
         title: "Oops...",
         text: "You have reached the maximum uploads for today.",
-		customClass: {
-			container: "sweet-alert-container",
-		},
+        customClass: {
+          container: "sweet-alert-container",
+        },
       });
       return;
     }
@@ -60,39 +38,47 @@ function UploadImage() {
         icon: "error",
         title: "Oops...",
         text: "The maximum size for a photo is 10MB",
-		customClass: {
-			container: "sweet-alert-container",
-		},
+        customClass: {
+          container: "sweet-alert-container",
+        },
       });
       return;
     }
 
-    const imageRef = ref(storage, `images/${imageUpload.name}-${uuidv4()}`);
-    uploadBytes(imageRef, imageUpload)
-      .then((snapshot) => {
-        getDownloadURL(snapshot.ref)
-          .then((url) => {
-            setImageList((prev) => [...prev, url]);
-            localStorage.setItem("uploadedImagesCount", uploadedImagesCount + 1);
-            localStorage.setItem("lastUploadDate", new Date().toISOString());
-
-            Swal.fire({
-              icon: "success",
-              title: "Success!",
-              text: "Your image has been successfully uploaded.",
-			  customClass: {
-				container: "sweet-alert-container",
-			},
-            });
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-        setImageUpload(null);
-      })
-      .catch((error) => {
-        console.log(error);
+    setIsUploading(true);
+    try {
+      const url = await uploadToCloudinary(imageUpload);
+      await addDoc(collection(db, "images"), {
+        url,
+        status: "pending",
+        createdAt: serverTimestamp(),
       });
+
+      localStorage.setItem("uploadedImagesCount", uploadedImagesCount + 1);
+      localStorage.setItem("lastUploadDate", new Date().toISOString());
+      setImageUpload(null);
+
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: "Your image has been successfully uploaded.",
+        customClass: {
+          container: "sweet-alert-container",
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Gagal mengupload gambar, coba lagi.",
+        customClass: {
+          container: "sweet-alert-container",
+        },
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleImageChange = (event) => {
@@ -147,9 +133,10 @@ function UploadImage() {
 
 			<button
 				type="button"
-				className="py-2.5 w-[60%] mb-0 md:mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+				disabled={isUploading}
+				className="py-2.5 w-[60%] mb-0 md:mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
 				onClick={uploadImage}>
-				UPLOAD
+				{isUploading ? "UPLOADING..." : "UPLOAD"}
 			</button>
 		</div>
 	)

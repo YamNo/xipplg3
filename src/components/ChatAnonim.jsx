@@ -11,6 +11,8 @@ function Chat() {
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   const [userIp, setUserIp] = useState("");
   const [messageCount, setMessageCount] = useState(0);
+  const [isSending, setIsSending] = useState(false);
+  const SEND_COOLDOWN_MS = 3000;
 
   const chatsCollectionRef = collection(db, "chats");
   const messagesEndRef = useRef(null);
@@ -118,6 +120,7 @@ function Chat() {
   };
 
   const sendMessage = async () => {
+    if (isSending) return;
     if (message.trim() !== "") {
       if (containsProfanity(message)) {
         Swal.fire({
@@ -166,20 +169,25 @@ function Chat() {
       localStorage.setItem(userIpAddress, updatedSentMessageCount.toString());
       setMessageCount(updatedSentMessageCount);
 
-      // Menambahkan pesan ke Firestore
-      await addDoc(chatsCollectionRef, {
-        message: trimmedMessage,
-        sender: {
-          image: senderImageURL,
-        },
-        timestamp: new Date(),
-        userIp: userIp,
-      });
+      setIsSending(true);
+      try {
+        // Menambahkan pesan ke Firestore
+        await addDoc(chatsCollectionRef, {
+          message: trimmedMessage,
+          sender: {
+            image: senderImageURL,
+          },
+          timestamp: new Date(),
+          userIp: userIp,
+        });
 
-      setMessage(""); // Menghapus pesan setelah mengirim
-      setTimeout(() => {
-        setShouldScrollToBottom(true);
-      }, 100);
+        setMessage(""); // Menghapus pesan setelah mengirim
+        setTimeout(() => {
+          setShouldScrollToBottom(true);
+        }, 100);
+      } finally {
+        setTimeout(() => setIsSending(false), SEND_COOLDOWN_MS);
+      }
     }
   };
 
@@ -207,15 +215,16 @@ function Chat() {
       </div>
       <div id="InputChat" className="flex items-center mt-5">
         <input
-          className="bg-transparent flex-grow pr-4 w-4 placeholder:text-white placeholder:opacity-60"
+          className="bg-transparent flex-grow pr-4 w-4 placeholder:text-white placeholder:opacity-60 disabled:opacity-40"
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Ketik pesan Anda..."
           maxLength={60}
+          disabled={isSending}
         />
-        <button onClick={sendMessage} className="ml-2">
+        <button onClick={sendMessage} className="ml-2 disabled:opacity-40" disabled={isSending}>
           <img src="/paper-plane.png" alt="" className="h-4 w-4 lg:h-6 lg:w-6" />
         </button>
       </div>

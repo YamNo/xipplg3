@@ -45,9 +45,14 @@ const Navbar = () => {
 								Gallery
 							</a>
 						</li>
-						<li>
+						<li className="mb-4">
 							<a href="#Tabs" className="text-white opacity-80 text-lg font-bold">
 								Structure & Schedule
+							</a>
+						</li>
+						<li>
+							<a href="/TugasPR" className="text-white opacity-80 text-lg font-bold">
+								Tugas & PR
 							</a>
 						</li>
 					</ul>
@@ -57,7 +62,9 @@ const Navbar = () => {
 			{/* Dekstop */}
 			<div className="flex justify-between relative top-3 hidden lg:flex">
 				<div>
-					<img src="/LogoMETIK.png" className="w-12 h-12 rounded-full" alt="" />
+					<a href="https://smkmediainformatika.sch.id/" target="_blank" rel="noopener noreferrer">
+						<img src="/LogoMETIK.png" className="w-12 h-12 rounded-full" alt="" />
+					</a>
 				</div>
 				<ul className="mt-2 flex gap-5">
 					<li className="mb-4">
@@ -70,9 +77,14 @@ const Navbar = () => {
 							Gallery
 						</a>
 					</li>
-					<li>
+					<li className="mb-4">
 						<a href="#Tabs" className="text-white opacity-80 text-[1rem] font-semibold">
 							Structure & Schedule
+						</a>
+					</li>
+					<li>
+						<a href="/TugasPR" className="text-white opacity-80 text-[1rem] font-semibold">
+							Tugas & PR
 						</a>
 					</li>
 				</ul>

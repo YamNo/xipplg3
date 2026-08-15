@@ -4,10 +4,28 @@ import Navbar from "../components/Navbar"
 
 const Home = () => {
 	return (
-		<div className="text-white px-[10%]" id="Home">
-			<Navbar />
-			<div className="lg:hidden">
-				<div className="font-bold text-5xl text-center py-20 ">XI PPLG 3</div>
+		<div className="text-white">
+			<div className="px-[10%]" id="Home">
+				<Navbar />
+				<div className="lg:hidden">
+					<div className="font-bold text-5xl text-center py-20 "></div>
+				</div>
+
+				{/* Dekstop */}
+				<div className="hidden lg:block">
+					<div className="flex justify-center items-center flex-col h-[100vh]">
+						<h5 className="text-[1.4rem] font-semibold">Hi, Visitor!</h5>
+						<h1 className="text-7xl font-extrabold" id="Glow">
+							WELCOME
+						</h1>
+						<h6 className="text-sm" style={{ letterSpacing: "5px" }}>
+							TO XI PPLG 3
+						</h6>
+					</div>
+				</div>
+			</div>
+
+			<div className="px-[10%] lg:hidden">
 				<div
 					className="border-2 flex justify-between px-10 text-4xl font-bold py-2 relative"
 					id="TotalSiswa">
@@ -34,19 +52,6 @@ const Home = () => {
 					<div className="grid gap-2 md:gap-0 md:grid-cols-1">
 						<BoxTextAnonim />
 					</div>
-				</div>
-			</div>
-
-			{/* Dekstop */}
-			<div className="hidden lg:block">
-				<div className="flex justify-center items-center flex-col h-[100vh]">
-					<h5 className="text-[1.4rem] font-semibold">Hi, Visitor!</h5>
-					<h1 className="text-7xl font-extrabold" id="Glow">
-						WELCOME
-					</h1>
-					<h6 className="text-sm" style={{ letterSpacing: "5px" }}>
-						TO XI PPLG 3
-					</h6>
 				</div>
 			</div>
 		</div>
