@@ -21,5 +21,8 @@ node_modules
 *.sln
 *.sw?
 
-# Firebase config - keep out of GitHub
-src/firebase.js
+# Nilai config Firebase disimpan di sini, jangan sampai masuk GitHub.
+# src/firebase.js sendiri aman karena hanya membaca dari env ini.
+.env
+.env.*
+!.env.example

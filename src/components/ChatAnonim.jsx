@@ -16,7 +16,7 @@ function Chat() {
   const SEND_COOLDOWN_MS = 3000;
 
   const chatsCollectionRef = collection(db, "chats");
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   // Fungsi untuk mengambil daftar alamat IP yang diblokir dari Firebase Firestore
   const fetchBlockedIPs = async () => {
@@ -65,7 +65,10 @@ function Chat() {
 
   const scrollToBottom = () => {
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+      // Geser isi kotak chat langsung lewat scrollTop. scrollIntoView akan ikut
+      // menggulir seluruh halaman, bikin web kebuka dalam posisi ter-scroll.
+      const container = messagesContainerRef.current;
+      if (container) container.scrollTop = container.scrollHeight;
     }, 100);
   }
 
@@ -209,7 +212,7 @@ function Chat() {
         Text Anonim
       </div>
 
-      <div className="mt-5" id="KotakPesan" style={{ overflowY: "auto" }}>
+      <div className="mt-5" id="KotakPesan" ref={messagesContainerRef} style={{ overflowY: "auto" }}>
         {isLoadingChat
           ? [0, 1, 2, 3].map((i) => (
               <div key={i} className="flex items-center text-sm py-[1%]">
@@ -225,7 +228,6 @@ function Chat() {
                 <div className="relative top-[0.30rem]">{msg.message}</div>
               </div>
             ))}
-        <div ref={messagesEndRef}></div>
       </div>
       <div id="InputChat" className="flex items-center mt-5">
         <input
