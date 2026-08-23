@@ -4,6 +4,20 @@ import Footer from "./Footer"
 // Setiap ada update, tambahkan entri baru di paling atas array ini.
 const CHANGELOG = [
 	{
+		version: "v1.6",
+		date: "23 Agustus 2026",
+		changes: [
+			{
+				type: "Baru",
+				text: "Website bisa dipasang ke layar utama HP (PWA) — terasa seperti aplikasi, lengkap dengan ikon dan shortcut ke Tugas & PR.",
+			},
+			{
+				type: "Baru",
+				text: "Foto yang diunggah langsung dikirim ke bot Telegram admin dengan tombol Setujui / Tolak, jadi moderasi bisa dari chat.",
+			},
+		],
+	},
+	{
 		version: "v1.5",
 		date: "23 Agustus 2026",
 		changes: [

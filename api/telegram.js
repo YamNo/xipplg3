@@ -40,15 +40,19 @@ Catatan:
 • Tugas otomatis hilang pada tanggal deadline-nya.
 • Acara tanpa tanggal hapus akan hilang sehari setelah acaranya.`
 
-const kirimPesan = async (chatId, text) => {
+const panggilApi = async (metode, body) => {
 	const token = process.env.TELEGRAM_BOT_TOKEN
-	if (!token) return
-	await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+	if (!token) return null
+	const res = await fetch(`https://api.telegram.org/bot${token}/${metode}`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ chat_id: chatId, text }),
+		body: JSON.stringify(body),
 	})
+	if (!res.ok) console.error(`Telegram ${metode} gagal:`, (await res.text()).slice(0, 200))
+	return res
 }
+
+const kirimPesan = (chatId, text) => panggilApi("sendMessage", { chat_id: chatId, text })
 
 const nilai = (v) => {
 	if (typeof v === "boolean") return { booleanValue: v }
@@ -65,6 +69,21 @@ const simpan = async (koleksi, data) => {
 	})
 	if (!res.ok) throw new Error(`Firestore ${res.status}: ${(await res.text()).slice(0, 200)}`)
 	return res.json()
+}
+
+// Ubah satu field dokumen tanpa menyentuh field lainnya.
+const ubahField = async (path, field, value) => {
+	const res = await fetch(`${FS_BASE}/${path}?updateMask.fieldPaths=${field}`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ fields: { [field]: nilai(value) } }),
+	})
+	if (!res.ok) throw new Error(`Firestore ${res.status}: ${(await res.text()).slice(0, 200)}`)
+}
+
+const hapusDoc = async (path) => {
+	const res = await fetch(`${FS_BASE}/${path}`, { method: "DELETE" })
+	if (!res.ok) throw new Error(`Firestore ${res.status}: ${(await res.text()).slice(0, 200)}`)
 }
 
 const ambil = async (koleksi) => {
@@ -227,6 +246,55 @@ export default async function handler(req, res) {
 		return res.status(401).json({ ok: false, error: "secret tidak cocok" })
 	}
 
+	const diizinkanGlobal = (process.env.TELEGRAM_ALLOWED_IDS || "")
+		.split(",")
+		.map((x) => x.trim())
+		.filter(Boolean)
+
+	// --- Tombol Setujui / Tolak pada foto yang menunggu moderasi ---
+	const cb = req.body?.callback_query
+	if (cb) {
+		const jawab = (text) => panggilApi("answerCallbackQuery", { callback_query_id: cb.id, text })
+
+		if (!diizinkanGlobal.includes(String(cb.from?.id))) {
+			await jawab("⛔ Kamu tidak punya izin memoderasi.")
+			return res.status(200).json({ ok: true })
+		}
+
+		const cocok = String(cb.data || "").match(/^foto_(ok|no):([A-Za-z0-9_-]{1,64})$/)
+		if (!cocok) {
+			await jawab("Tombol tidak dikenal.")
+			return res.status(200).json({ ok: true })
+		}
+
+		const [, aksi, id] = cocok
+		try {
+			if (aksi === "ok") {
+				await ubahField(`images/${id}`, "status", "approved")
+				await jawab("✅ Foto disetujui")
+			} else {
+				await hapusDoc(`images/${id}`)
+				await jawab("🗑 Foto ditolak & dihapus")
+			}
+
+			// Hilangkan tombolnya dan tandai hasilnya di caption.
+			await panggilApi("editMessageCaption", {
+				chat_id: cb.message.chat.id,
+				message_id: cb.message.message_id,
+				caption:
+					aksi === "ok"
+						? "✅ Foto DISETUJUI — sudah tampil di Class Gallery."
+						: "🗑 Foto DITOLAK — sudah dihapus dari database.",
+				reply_markup: { inline_keyboard: [] },
+			})
+		} catch (err) {
+			console.error("Gagal memoderasi foto:", err)
+			await jawab("❌ Gagal: " + String(err.message).slice(0, 150))
+		}
+
+		return res.status(200).json({ ok: true })
+	}
+
 	const pesan = req.body?.message || req.body?.edited_message
 	const chatId = pesan?.chat?.id
 	const userId = pesan?.from?.id
@@ -236,10 +304,7 @@ export default async function handler(req, res) {
 	if (!chatId || !teks) return res.status(200).json({ ok: true })
 
 	try {
-		const diizinkan = (process.env.TELEGRAM_ALLOWED_IDS || "")
-			.split(",")
-			.map((x) => x.trim())
-			.filter(Boolean)
+		const diizinkan = diizinkanGlobal
 
 		if (diizinkan.length === 0) {
 			await kirimPesan(

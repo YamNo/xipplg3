@@ -55,7 +55,8 @@ console.log(`✓ Bot terhubung: @${info.result.username} (${info.result.first_na
 const hasil = await api("setWebhook", {
 	url,
 	secret_token: secret,
-	allowed_updates: ["message", "edited_message"],
+	// callback_query dibutuhkan untuk tombol Setujui/Tolak pada moderasi foto.
+	allowed_updates: ["message", "edited_message", "callback_query"],
 	drop_pending_updates: true,
 })
 

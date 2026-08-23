@@ -48,11 +48,20 @@ function UploadImage() {
     setIsUploading(true);
     try {
       const url = await uploadToCloudinary(imageUpload);
-      await addDoc(collection(db, "images"), {
+      const docRef = await addDoc(collection(db, "images"), {
         url,
         status: "pending",
         createdAt: serverTimestamp(),
       });
+
+      // Beri tahu admin lewat bot Telegram supaya bisa langsung disetujui atau
+      // ditolak dari chat. Kalau gagal, upload tetap dianggap berhasil karena
+      // fotonya sudah masuk antrean moderasi di panel admin.
+      fetch("/api/notify-foto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: docRef.id }),
+      }).catch((err) => console.error("Gagal memberi tahu admin:", err));
 
       localStorage.setItem("uploadedImagesCount", uploadedImagesCount + 1);
       localStorage.setItem("lastUploadDate", new Date().toISOString());
