@@ -13,6 +13,14 @@ const CHANGELOG = [
 			},
 			{
 				type: "Baru",
+				text: "Pengumuman dan Acara bisa diberi tanggal hapus otomatis, diatur dari bot Telegram maupun panel admin.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Tugas hilang tepat pada tanggal deadline-nya, tidak lagi menunggu sampai lewat.",
+			},
+			{
+				type: "Baru",
 				text: "Halaman Penghitung Skor di /Penghitung_Skor — papan skor 2 tim dengan pengumuman suara dan pintasan keyboard.",
 			},
 			{

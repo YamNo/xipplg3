@@ -47,10 +47,12 @@ const AdminLogin = () => {
 	const [taskDescription, setTaskDescription] = useState("")
 	const [taskDeadline, setTaskDeadline] = useState("")
 	const [announcementText, setAnnouncementText] = useState("")
+	const [announcementExpiry, setAnnouncementExpiry] = useState("")
 	const [birthdayName, setBirthdayName] = useState("")
 	const [birthdayDate, setBirthdayDate] = useState("")
 	const [eventTitle, setEventTitle] = useState("")
 	const [eventDate, setEventDate] = useState("")
+	const [eventExpiry, setEventExpiry] = useState("")
 	const [newIp, setNewIp] = useState("")
 
 	const fetchAll = async () => {
@@ -162,8 +164,10 @@ const AdminLogin = () => {
 		await addDoc(collection(db, "announcements"), {
 			text: announcementText.trim(),
 			createdAt: serverTimestamp(),
+			...(announcementExpiry ? { expiresAt: announcementExpiry } : {}),
 		})
 		setAnnouncementText("")
+		setAnnouncementExpiry("")
 		fetchAll()
 	}
 	const deleteAnnouncement = async (id) => {
@@ -192,9 +196,14 @@ const AdminLogin = () => {
 	const addEvent = async (e) => {
 		e.preventDefault()
 		if (!eventTitle.trim() || !eventDate) return
-		await addDoc(collection(db, "events"), { title: eventTitle.trim(), date: eventDate })
+		await addDoc(collection(db, "events"), {
+			title: eventTitle.trim(),
+			date: eventDate,
+			...(eventExpiry ? { expiresAt: eventExpiry } : {}),
+		})
 		setEventTitle("")
 		setEventDate("")
+		setEventExpiry("")
 		fetchAll()
 	}
 	const deleteEvent = async (id) => {
@@ -612,6 +621,15 @@ const AdminLogin = () => {
 							rows={2}
 							className={`${inputClass} resize-none`}
 						/>
+						<label className="text-xs opacity-60">
+							Tanggal hapus otomatis (opsional — kosongkan agar tidak pernah dihapus)
+							<input
+								type="date"
+								value={announcementExpiry}
+								onChange={(e) => setAnnouncementExpiry(e.target.value)}
+								className={`${inputClass} mt-1`}
+							/>
+						</label>
 						<button type="submit" className={primaryBtn}>
 							Tambah Pengumuman
 						</button>
@@ -622,7 +640,12 @@ const AdminLogin = () => {
 						)}
 						{announcements.map((item) => (
 							<div key={item.id} className={`${cardClass} flex gap-3 items-center`}>
-								<p className="flex-1 min-w-0 text-sm break-words">{item.text}</p>
+								<div className="flex-1 min-w-0">
+								<p className="text-sm break-words">{item.text}</p>
+								{item.expiresAt && (
+									<p className="text-xs opacity-40 mt-1">🗑 hapus {item.expiresAt}</p>
+								)}
+							</div>
 								<button onClick={() => deleteAnnouncement(item.id)} className={dangerBtn}>
 									Hapus
 								</button>
@@ -677,12 +700,24 @@ const AdminLogin = () => {
 							placeholder="Nama acara (misal: Ujian Akhir Semester)"
 							className={inputClass}
 						/>
-						<input
-							type="date"
-							value={eventDate}
-							onChange={(e) => setEventDate(e.target.value)}
-							className={inputClass}
-						/>
+						<label className="text-xs opacity-60">
+							Tanggal acara
+							<input
+								type="date"
+								value={eventDate}
+								onChange={(e) => setEventDate(e.target.value)}
+								className={`${inputClass} mt-1`}
+							/>
+						</label>
+						<label className="text-xs opacity-60">
+							Tanggal hapus otomatis (opsional — bawaan: sehari setelah acara)
+							<input
+								type="date"
+								value={eventExpiry}
+								onChange={(e) => setEventExpiry(e.target.value)}
+								className={`${inputClass} mt-1`}
+							/>
+						</label>
 						<button type="submit" className={primaryBtn}>
 							Tambah Acara
 						</button>
@@ -693,7 +728,10 @@ const AdminLogin = () => {
 							<div key={ev.id} className={`${cardClass} flex gap-3 items-center`}>
 								<div className="flex-1 min-w-0">
 									<p className="font-semibold">{ev.title}</p>
-									<p className="text-xs opacity-40">{ev.date}</p>
+									<p className="text-xs opacity-40">
+									{ev.date}
+									{ev.expiresAt ? ` · 🗑 hapus ${ev.expiresAt}` : ""}
+								</p>
 								</div>
 								<button onClick={() => deleteEvent(ev.id)} className={dangerBtn}>
 									Hapus

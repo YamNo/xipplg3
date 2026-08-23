@@ -19,9 +19,11 @@ const BANTUAN = `Halo! Kirim salah satu perintah berikut:
 
 📢 Pengumuman
 /pengumuman Besok ulangan Matematika
+/pengumuman Besok ulangan | hapus 2026-08-30
 
 ⏳ Acara (countdown)
 /acara Classmeet | 2026-09-01
+/acara Classmeet | 2026-09-01 | hapus 2026-09-10
 
 🎂 Ulang tahun
 /ultah Budi Santoso | 2010-05-17
@@ -30,8 +32,13 @@ Lainnya:
 /daftar - lihat data yang sudah masuk
 /bantuan - tampilkan pesan ini
 
-Catatan: tanggal memakai format TAHUN-BULAN-TANGGAL (2026-08-30).
-Tanda | dipakai untuk memisahkan bagian.`
+Catatan:
+• Tanggal memakai format TAHUN-BULAN-TANGGAL (2026-08-30).
+• Tanda | memisahkan bagian.
+• Tambahkan "hapus <tanggal>" di bagian terakhir untuk menentukan kapan
+  data itu hilang sendiri dari web.
+• Tugas otomatis hilang pada tanggal deadline-nya.
+• Acara tanpa tanggal hapus akan hilang sehari setelah acaranya.`
 
 const kirimPesan = async (chatId, text) => {
 	const token = process.env.TELEGRAM_BOT_TOKEN
@@ -84,6 +91,17 @@ const pecah = (teks) =>
 		.map((x) => x.trim())
 		.filter((x) => x.length > 0)
 
+// Ambil bagian "hapus <tanggal>" dari daftar bagian, kalau ada.
+// Mengembalikan { bagian: sisanya, expiresAt, salah }.
+const pisahTanggalHapus = (bagian) => {
+	const akhir = bagian[bagian.length - 1] || ""
+	const m = akhir.match(/^hapus\s+(.+)$/i)
+	if (!m) return { bagian, expiresAt: null, salah: null }
+	const tgl = m[1].trim()
+	if (!cekTanggal(tgl)) return { bagian, expiresAt: null, salah: tgl }
+	return { bagian: bagian.slice(0, -1), expiresAt: tgl, salah: null }
+}
+
 const perintah = {
 	async tugas(arg) {
 		const bagian = pecah(arg)
@@ -108,20 +126,37 @@ const perintah = {
 	},
 
 	async pengumuman(arg) {
-		const teks = arg.trim()
+		const { bagian, expiresAt, salah } = pisahTanggalHapus(pecah(arg))
+		if (salah) return `❌ Tanggal hapus "${salah}" tidak valid. Contoh: hapus 2026-08-30`
+
+		const teks = bagian.join(" | ").trim()
 		if (!teks) return "❌ Isi pengumumannya belum ada.\nContoh:\n/pengumuman Besok ulangan Matematika"
-		await simpan("announcements", { text: teks, createdAt: { timestampValue: sekarangISO() } })
-		return `✅ Pengumuman ditambahkan:\n📢 ${teks}`
+
+		const data = { text: teks, createdAt: { timestampValue: sekarangISO() } }
+		if (expiresAt) data.expiresAt = expiresAt
+
+		await simpan("announcements", data)
+		return `✅ Pengumuman ditambahkan:\n📢 ${teks}\n${
+			expiresAt ? `🗑 Hilang otomatis pada ${expiresAt}` : "🗑 Tidak dihapus otomatis"
+		}`
 	},
 
 	async acara(arg) {
-		const bagian = pecah(arg)
+		const { bagian, expiresAt, salah } = pisahTanggalHapus(pecah(arg))
+		if (salah) return `❌ Tanggal hapus "${salah}" tidak valid. Contoh: hapus 2026-09-10`
+
 		if (bagian.length < 2) return "❌ Format kurang lengkap.\nContoh:\n/acara Classmeet | 2026-09-01"
 		const date = bagian[bagian.length - 1]
 		if (!cekTanggal(date)) return `❌ Tanggal "${date}" tidak valid. Pakai format 2026-09-01.`
+
 		const title = bagian.slice(0, -1).join(" ")
-		await simpan("events", { title, date })
-		return `✅ Acara ditambahkan:\n⏳ ${title}\n📅 ${date}`
+		const data = { title, date }
+		if (expiresAt) data.expiresAt = expiresAt
+
+		await simpan("events", data)
+		return `✅ Acara ditambahkan:\n⏳ ${title}\n📅 ${date}\n${
+			expiresAt ? `🗑 Hilang otomatis pada ${expiresAt}` : "🗑 Hilang sehari setelah acaranya"
+		}`
 	},
 
 	async ultah(arg) {
@@ -150,10 +185,10 @@ const perintah = {
 			baris(tugas, (t) => `${t.subject} — ${t.deadline}`),
 			"",
 			`📢 Pengumuman (${pengumuman.length})`,
-			baris(pengumuman, (p) => p.text),
+			baris(pengumuman, (p) => `${p.text}${p.expiresAt ? ` (hapus ${p.expiresAt})` : ""}`),
 			"",
 			`⏳ Acara (${acara.length})`,
-			baris(acara, (a) => `${a.title} — ${a.date}`),
+			baris(acara, (a) => `${a.title} — ${a.date}${a.expiresAt ? ` (hapus ${a.expiresAt})` : ""}`),
 			"",
 			`🎂 Ulang tahun (${ultah.length})`,
 			baris(ultah, (u) => `${u.name} — ${u.date}`),

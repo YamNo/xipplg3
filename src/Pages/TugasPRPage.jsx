@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { db } from "../firebase"
-import { collection, query, orderBy, onSnapshot, getDocs, deleteDoc, doc } from "firebase/firestore"
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore"
+import { bersihkanKedaluwarsa, sudahKedaluwarsa } from "../utils/kedaluwarsa"
 import Footer from "./Footer"
 
 const formatDeadline = (deadline) => {
@@ -20,36 +21,18 @@ const TugasPRPage = () => {
 	)
 	const knownIds = useRef(null)
 
-	// Hapus otomatis tugas yang deadline-nya sudah lewat, dijalankan sekali saat
-	// halaman dibuka. Tugas masih tampil sepanjang hari deadline-nya, lalu hilang
-	// begitu tanggalnya terlewati (deadline 2026-08-30 hilang pada 2026-08-31).
+	// Hapus otomatis data kedaluwarsa saat halaman dibuka. Aturan tanggalnya
+	// terpusat di src/utils/kedaluwarsa.js.
 	useEffect(() => {
-		const bersihkanKedaluwarsa = async () => {
-			try {
-				const hariIni = new Date().toLocaleDateString("sv-SE")
-
-				const snap = await getDocs(collection(db, "assignments"))
-				const kedaluwarsa = snap.docs.filter((d) => {
-					const deadline = d.data().deadline
-					return deadline && deadline < hariIni
-				})
-
-				await Promise.all(kedaluwarsa.map((d) => deleteDoc(doc(db, "assignments", d.id))))
-				if (kedaluwarsa.length > 0) {
-					console.log(`${kedaluwarsa.length} tugas kedaluwarsa dihapus otomatis.`)
-				}
-			} catch (err) {
-				console.error("Gagal menghapus tugas kedaluwarsa:", err)
-			}
-		}
-
 		bersihkanKedaluwarsa()
 	}, [])
 
 	useEffect(() => {
 		const q = query(collection(db, "assignments"), orderBy("deadline", "asc"))
 		const unsubscribe = onSnapshot(q, (snapshot) => {
-			const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }))
+			const list = snapshot.docs
+				.map((d) => ({ id: d.id, ...d.data() }))
+				.filter((t) => !sudahKedaluwarsa("assignments", t))
 			setTasks(list)
 
 			// Baru kirim notifikasi untuk tugas yang ditambahkan SETELAH halaman ini dibuka,

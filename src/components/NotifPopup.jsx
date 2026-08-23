@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { db } from "../firebase"
 import { collection, query, orderBy, getDocs } from "firebase/firestore"
+import { bersihkanKedaluwarsa, sudahKedaluwarsa } from "../utils/kedaluwarsa"
 
 const AUTO_HIDE_MS = 10000
 
@@ -18,14 +19,15 @@ const NotifPopup = () => {
 				const annSnap = await getDocs(
 					query(collection(db, "announcements"), orderBy("createdAt", "desc")),
 				)
-				annSnap.docs.forEach((d) =>
+				annSnap.docs.forEach((d) => {
+					if (sudahKedaluwarsa("announcements", d.data())) return
 					notifs.push({
 						id: `pengumuman-${d.id}`,
 						icon: "📢",
 						title: "Pengumuman",
 						text: d.data().text,
-					}),
-				)
+					})
+				})
 			} catch (err) {
 				console.error("Gagal mengambil pengumuman:", err)
 			}
@@ -83,7 +85,7 @@ const NotifPopup = () => {
 				const evSnap = await getDocs(query(collection(db, "events"), orderBy("date", "asc")))
 				const upcoming = evSnap.docs
 					.map((d) => d.data())
-					.find((e) => e.date && new Date(`${e.date}T23:59:59`).getTime() >= Date.now())
+					.find((e) => e.date && !sudahKedaluwarsa("events", e))
 
 				if (upcoming) {
 					notifs.push({
@@ -101,6 +103,8 @@ const NotifPopup = () => {
 		}
 
 		loadNotifications()
+		// Bersihkan data kedaluwarsa (tugas, pengumuman, acara) sekali per kunjungan.
+		bersihkanKedaluwarsa()
 	}, [])
 
 	// Sembunyikan otomatis setelah 10 detik.
