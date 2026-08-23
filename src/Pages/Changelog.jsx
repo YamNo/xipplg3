@@ -9,7 +9,7 @@ const CHANGELOG = [
 		changes: [
 			{
 				type: "Baru",
-				text: "Login admin sekarang pakai akun Firebase Authentication, bukan password yang tertanam di kode.",
+				text: "Email & password admin dipindah ke environment variable, jadi bisa diganti tanpa mengubah kode.",
 			},
 			{
 				type: "Baru",
@@ -25,7 +25,7 @@ const CHANGELOG = [
 			},
 			{
 				type: "Perbaikan",
-				text: "Keamanan data diperketat — hanya admin yang boleh mengubah atau menghapus data.",
+				text: "Validasi data diperketat: panjang pesan chat dibatasi dan foto baru wajib lewat persetujuan admin.",
 			},
 			{
 				type: "Perbaikan",

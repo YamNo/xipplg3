@@ -1,69 +1,67 @@
 import { useEffect, useState } from "react"
-import { auth, db } from "../firebase"
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth"
-import { doc, getDoc } from "firebase/firestore"
 
-// Status admin ditentukan oleh keberadaan dokumen admins/{uid} di Firestore,
-// bukan oleh password di kode. Ini juga yang dipakai Firestore rules, jadi
-// orang yang tidak terdaftar tidak bisa menulis data meski lewat API langsung.
+// Kredensial admin dibaca dari environment variable (.env / Vercel).
+//
+// CATATAN KEAMANAN: Vite menanamkan nilai VITE_* ke dalam bundle JavaScript
+// yang dikirim ke browser, jadi email & password ini BISA dibaca pengunjung
+// lewat view-source. Perlindungannya hanya menghalangi orang awam, bukan
+// pengamanan sungguhan. Untuk pengamanan nyata, gunakan Firebase
+// Authentication (lihat riwayat file ini) supaya password tidak pernah
+// ikut ke sisi browser.
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD
+
+const STORAGE_KEY = "isAdmin"
+
 export const useAdminAuth = () => {
-	const [user, setUser] = useState(null)
 	const [isAdmin, setIsAdmin] = useState(false)
 	const [checking, setChecking] = useState(true)
 	const [error, setError] = useState("")
 
 	useEffect(() => {
-		const unsubscribe = onAuthStateChanged(auth, async (current) => {
-			setUser(current)
-
-			if (!current) {
-				setIsAdmin(false)
-				setChecking(false)
-				return
-			}
-
-			try {
-				const snap = await getDoc(doc(db, "admins", current.uid))
-				setIsAdmin(snap.exists())
-				if (!snap.exists()) {
-					setError(
-						`Akun ${current.email} belum terdaftar sebagai admin. ` +
-							`Tambahkan dokumen dengan ID "${current.uid}" di koleksi "admins".`,
-					)
-				}
-			} catch (err) {
-				console.error("Gagal memeriksa status admin:", err)
-				setIsAdmin(false)
-				setError("Gagal memeriksa status admin. Cek koneksi lalu coba lagi.")
-			} finally {
-				setChecking(false)
-			}
-		})
-
-		return () => unsubscribe()
+		try {
+			setIsAdmin(localStorage.getItem(STORAGE_KEY) === "true")
+		} catch {
+			setIsAdmin(false)
+		}
+		setChecking(false)
 	}, [])
 
 	const login = async (email, password) => {
 		setError("")
-		try {
-			await signInWithEmailAndPassword(auth, email.trim(), password)
-			return true
-		} catch (err) {
-			const pesan = {
-				"auth/invalid-credential": "Email atau password salah.",
-				"auth/invalid-email": "Format email tidak valid.",
-				"auth/user-not-found": "Akun tidak ditemukan.",
-				"auth/wrong-password": "Password salah.",
-				"auth/too-many-requests": "Terlalu banyak percobaan. Coba lagi nanti.",
-				"auth/operation-not-allowed":
-					"Login Email/Password belum diaktifkan di Firebase Console (Authentication → Sign-in method).",
-			}
-			setError(pesan[err.code] || `Gagal login: ${err.code}`)
+
+		if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+			setError(
+				"VITE_ADMIN_EMAIL / VITE_ADMIN_PASSWORD belum diisi di .env (dan Environment Variables Vercel).",
+			)
 			return false
 		}
+
+		if (email.trim().toLowerCase() !== ADMIN_EMAIL.toLowerCase() || password !== ADMIN_PASSWORD) {
+			setError("Email atau password salah.")
+			return false
+		}
+
+		try {
+			localStorage.setItem(STORAGE_KEY, "true")
+		} catch {
+			// Kalau localStorage diblokir, sesi tetap jalan sampai halaman ditutup.
+		}
+		setIsAdmin(true)
+		return true
 	}
 
-	const logout = () => signOut(auth)
+	const logout = () => {
+		try {
+			localStorage.removeItem(STORAGE_KEY)
+		} catch {
+			// abaikan
+		}
+		setIsAdmin(false)
+	}
+
+	// user disediakan supaya bentuk datanya tetap sama seperti sebelumnya.
+	const user = isAdmin ? { email: ADMIN_EMAIL } : null
 
 	return { user, isAdmin, checking, error, login, logout }
 }

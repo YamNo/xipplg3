@@ -279,7 +279,7 @@ const AdminLogin = () => {
 				<form onSubmit={handleLogin} className="w-full max-w-sm">
 					<h1 className="text-2xl font-bold mb-2 text-center">Admin Login</h1>
 					<p className="text-xs opacity-50 text-center mb-6">
-						Masuk dengan akun admin yang terdaftar di Firebase Authentication.
+						Masuk dengan email &amp; password admin.
 					</p>
 					<input
 						type="email"
@@ -301,14 +301,6 @@ const AdminLogin = () => {
 					<button type="submit" disabled={loggingIn} className={`${primaryBtn} w-full`}>
 						{loggingIn ? "Memproses..." : "Login"}
 					</button>
-					{user && !isAdmin && (
-						<button
-							type="button"
-							onClick={logout}
-							className="w-full mt-3 text-sm opacity-60 hover:underline">
-							Keluar dari {user.email}
-						</button>
-					)}
 				</form>
 			</div>
 		)
