@@ -65,9 +65,9 @@ export default function BoxTextAnonim() {
 	const handleClose = () => setOpen(false)
 
 	return (
-		<div>
-			<div onClick={handleOpen}  >
-				<div  id="BoxTextAnonim">
+		<div className="h-full">
+			<div onClick={handleOpen} className="h-full">
+				<div id="BoxTextAnonim" className="h-full">
 					<div className="flex justify-between">
 						<img src="/paper-plane.png" alt="" className="w-auto h-6" />
 						<img src="/next.png" alt="" className="h-3 w-3" />

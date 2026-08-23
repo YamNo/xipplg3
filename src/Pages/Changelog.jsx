@@ -31,6 +31,14 @@ const CHANGELOG = [
 				type: "Perbaikan",
 				text: "Website selalu terbuka dari bagian paling atas, tidak lagi meneruskan posisi scroll sebelumnya.",
 			},
+			{
+				type: "Perbaikan",
+				text: "Foto kelas kini terlihat jelas di tampilan HP, tidak lagi terpotong atau tertutup tombol.",
+			},
+			{
+				type: "Baru",
+				text: "Notifikasi Tugas/PR ikut muncul di popup beranda, di HP maupun desktop.",
+			},
 		],
 	},
 	{

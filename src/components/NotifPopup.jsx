@@ -53,6 +53,33 @@ const NotifPopup = () => {
 			}
 
 			try {
+				// Tugas/PR yang deadline-nya belum lewat — supaya siswa langsung tahu
+				// begitu membuka web, di HP maupun desktop.
+				const hariIni = new Date().toLocaleDateString("sv-SE")
+				const tugasSnap = await getDocs(
+					query(collection(db, "assignments"), orderBy("deadline", "asc")),
+				)
+				const aktif = tugasSnap.docs
+					.map((d) => d.data())
+					.filter((t) => (t.deadline || "") >= hariIni)
+
+				if (aktif.length > 0) {
+					notifs.push({
+						id: "tugas",
+						icon: "📝",
+						title: aktif.length === 1 ? "Ada 1 Tugas/PR" : `Ada ${aktif.length} Tugas/PR`,
+						text: aktif
+							.slice(0, 3)
+							.map((t) => `${t.subject} (${t.deadline})`)
+							.join(", "),
+						link: "/TugasPR",
+					})
+				}
+			} catch (err) {
+				console.error("Gagal mengambil tugas:", err)
+			}
+
+			try {
 				const evSnap = await getDocs(query(collection(db, "events"), orderBy("date", "asc")))
 				const upcoming = evSnap.docs
 					.map((d) => d.data())
@@ -125,6 +152,11 @@ const NotifPopup = () => {
 						<p className="text-white opacity-70 text-sm mt-1 break-words">
 							{item.countdownTo ? formatCountdown(item.countdownTo) : item.text}
 						</p>
+						{item.link && (
+							<a href={item.link} className="text-white text-xs underline opacity-80 mt-1 inline-block">
+								Lihat detail
+							</a>
+						)}
 					</div>
 					<button
 						onClick={closeNow}

@@ -7,9 +7,9 @@ const Home = () => {
 		<div className="text-white">
 			<div className="px-[10%]" id="Home">
 				<Navbar />
-				<div className="lg:hidden">
-					<div className="font-bold text-5xl text-center py-20 "></div>
-				</div>
+				{/* Di HP hero hanya berisi foto kelas — tombol dipindah ke bawah
+				    supaya fotonya tidak tertutup. */}
+				<div className="lg:hidden h-[52vh]"></div>
 
 				{/* Dekstop */}
 				<div className="hidden lg:block">
@@ -45,13 +45,9 @@ const Home = () => {
 					</div>
 				</div>
 
-				<div className="grid grid-cols-2 md:grid-cols-2 gap-7 md:gap-5 items-start">
-					<div className="grid gap-2 md:gap-0 md:grid-cols-1">
-						<BoxClassIg />
-					</div>
-					<div className="grid gap-2 md:gap-0 md:grid-cols-1">
-						<BoxTextAnonim />
-					</div>
+				<div className="grid grid-cols-2 gap-4 items-stretch mt-6">
+					<BoxClassIg />
+					<BoxTextAnonim />
 				</div>
 			</div>
 		</div>
