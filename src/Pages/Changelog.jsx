@@ -9,6 +9,10 @@ const CHANGELOG = [
 		changes: [
 			{
 				type: "Baru",
+				text: "Bot Telegram untuk menambah Tugas/PR, Pengumuman, Acara, dan Ulang Tahun langsung dari chat.",
+			},
+			{
+				type: "Baru",
 				text: "Halaman Penghitung Skor di /Penghitung_Skor — papan skor 2 tim dengan pengumuman suara dan pintasan keyboard.",
 			},
 			{
