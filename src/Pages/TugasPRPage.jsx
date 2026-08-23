@@ -21,19 +21,17 @@ const TugasPRPage = () => {
 	const knownIds = useRef(null)
 
 	// Hapus otomatis tugas yang deadline-nya sudah lewat, dijalankan sekali saat
-	// halaman dibuka. Diberi tenggang 1 hari supaya tugas dengan deadline "hari
-	// ini" tidak hilang sebelum harinya selesai.
+	// halaman dibuka. Tugas masih tampil sepanjang hari deadline-nya, lalu hilang
+	// begitu tanggalnya terlewati (deadline 2026-08-30 hilang pada 2026-08-31).
 	useEffect(() => {
 		const bersihkanKedaluwarsa = async () => {
 			try {
-				const batas = new Date()
-				batas.setDate(batas.getDate() - 1)
-				const batasStr = batas.toLocaleDateString("sv-SE")
+				const hariIni = new Date().toLocaleDateString("sv-SE")
 
 				const snap = await getDocs(collection(db, "assignments"))
 				const kedaluwarsa = snap.docs.filter((d) => {
 					const deadline = d.data().deadline
-					return deadline && deadline < batasStr
+					return deadline && deadline < hariIni
 				})
 
 				await Promise.all(kedaluwarsa.map((d) => deleteDoc(doc(db, "assignments", d.id))))
