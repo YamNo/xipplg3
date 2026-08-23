@@ -317,6 +317,11 @@ body {
 
 #Carousel {
 	z-index: 99;
+	/* Batasi lebar supaya slot slide tidak jauh lebih lebar dari foto (300px),
+	   yang bikin jarak antar foto terlihat menganga di layar besar. */
+	max-width: 1100px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 #SendImg Img,

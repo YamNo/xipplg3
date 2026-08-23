@@ -18,11 +18,6 @@ const Footer = () => {
 							<h2 className="mb-4 text-sm font-semibold uppercase text-white">CREATED BY</h2>
 							<ul className="text-gray-400 dark:text-gray-400 font-medium">
 								<li className="mb-2">
-									<a href="/created" className="hover:underline">
-										TIM PPLG3
-									</a>
-								</li>
-								<li className="mb-2">
 									<a href="/Changelog" className="hover:underline">
 										Changelog
 									</a>

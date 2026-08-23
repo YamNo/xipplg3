@@ -1,7 +1,58 @@
 import Footer from "./Footer"
 
 // Daftar perubahan website, terbaru di paling atas.
+// Setiap ada update, tambahkan entri baru di paling atas array ini.
 const CHANGELOG = [
+	{
+		version: "v1.4",
+		date: "23 Agustus 2026",
+		changes: [
+			{
+				type: "Baru",
+				text: "Login admin sekarang pakai akun Firebase Authentication, bukan password yang tertanam di kode.",
+			},
+			{
+				type: "Baru",
+				text: "Panel admin bisa moderasi Text Anonim: hapus pesan dan blokir IP pengirim.",
+			},
+			{
+				type: "Baru",
+				text: "Jadwal pelajaran dan struktur kelas bisa diubah langsung dari panel admin.",
+			},
+			{
+				type: "Baru",
+				text: "Ringkasan statistik di panel admin: foto pending, pesan hari ini, tugas aktif, IP diblokir.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Keamanan data diperketat — hanya admin yang boleh mengubah atau menghapus data.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Website selalu terbuka dari bagian paling atas, tidak lagi meneruskan posisi scroll sebelumnya.",
+			},
+		],
+	},
+	{
+		version: "v1.3",
+		date: "15 Agustus 2026",
+		changes: [
+			{
+				type: "Perbaikan",
+				text: "Deploy dari GitHub tidak lagi gagal — config Firebase dipindah ke environment variable.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Website tidak lagi terbuka dalam posisi ter-scroll ke bawah.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Jarak antar foto Class Gallery dirapatkan, terutama di layar tablet.",
+			},
+			{ type: "Perbaikan", text: "Bersihkan peringatan aksesibilitas di console browser." },
+			{ type: "Perbaikan", text: "Link TIM PPLG3 dihapus dari footer." },
+		],
+	},
 	{
 		version: "v1.2",
 		date: "15 Agustus 2026",

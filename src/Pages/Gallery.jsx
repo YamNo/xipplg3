@@ -43,25 +43,12 @@ const Carousel = () => {
 		fetchImagesFromFirebase()
 	}, [])
 
-	// Mobile: slidesToShow selalu 1, jadi carousel aman dipakai selama foto > 1.
+	// Carousel dipakai hanya kalau foto lebih dari 3 (lihat render di bawah),
+	// jadi slidesToShow di sini selalu lebih kecil dari jumlah slide asli —
+	// react-slick berantakan kalau slidesToShow >= jumlah slide.
 	// accessibility: false mematikan pengaturan fokus bawaan slick yang memicu
 	// warning "aria-hidden on an element because its descendant retained focus".
-	const mobileSettings = {
-		centerMode: true,
-		centerPadding: "50px",
-		slidesToShow: 1,
-		slidesToScroll: 1,
-		infinite: true,
-		autoplay: true,
-		autoplaySpeed: 2000,
-		dots: false,
-		arrows: false,
-		accessibility: false,
-	}
-
-	// Desktop: slidesToShow 3, carousel cuma aman dipakai kalau foto > 3
-	// (react-slick berantakan saat slidesToShow >= jumlah slide asli).
-	const desktopSettings = {
+	const carouselSettings = {
 		centerMode: true,
 		centerPadding: "30px",
 		slidesToShow: 3,
@@ -71,6 +58,22 @@ const Carousel = () => {
 		autoplaySpeed: 2000,
 		dots: true,
 		accessibility: false,
+		responsive: [
+			{
+				// Jumlah slide dipilih supaya lebar slot ≈ lebar foto (300px),
+				// jadi jarak antar foto tetap rapat di semua ukuran layar.
+				breakpoint: 1024,
+				settings: { slidesToShow: 3, centerPadding: "30px", dots: false, arrows: false },
+			},
+			{
+				breakpoint: 768,
+				settings: { slidesToShow: 2, centerPadding: "30px", dots: false, arrows: false },
+			},
+			{
+				breakpoint: 560,
+				settings: { slidesToShow: 1, centerPadding: "40px", dots: false, arrows: false },
+			},
+		],
 	}
 
 	const handleImageClick = (imageUrl) => {
@@ -90,76 +93,42 @@ const Carousel = () => {
 			</div>
 			<div id="Carousel">
 				{isLoading ? (
-					<div className="flex flex-wrap justify-center gap-6 px-[10%]">
-						<div className="Skeleton h-[300px] w-[300px]"></div>
-						<div className="Skeleton h-[300px] w-[300px] hidden lg:block"></div>
-						<div className="Skeleton h-[300px] w-[300px] hidden lg:block"></div>
+					<div className="flex flex-wrap justify-center gap-4 md:gap-6 px-[10%]">
+						<div className="Skeleton h-[300px] w-[300px] max-w-full"></div>
+						<div className="Skeleton h-[300px] w-[300px] max-w-full hidden sm:block"></div>
+						<div className="Skeleton h-[300px] w-[300px] max-w-full hidden lg:block"></div>
 					</div>
-				) : images.length === 0 ? null : (
-					<>
-						{/* Mobile */}
-						<div className="lg:hidden">
-							{images.length === 1 ? (
+				) : images.length === 0 ? null : images.length <= 3 ? (
+					// Sampai 3 foto masih muat sebaris di semua ukuran layar, jadi
+					// tampilkan langsung tanpa carousel — lebih rapat dan rapi.
+					<div className="flex flex-wrap justify-center gap-4 md:gap-6 px-[10%]">
+						{images.map((imageUrl, index) => (
+							<img
+								key={index}
+								src={imageUrl}
+								alt={`Image ${index}`}
+								onClick={() => handleImageClick(imageUrl)}
+								style={{ cursor: "pointer" }}
+							/>
+						))}
+					</div>
+				) : (
+					<Slider {...carouselSettings}>
+						{images.map((imageUrl, index) => (
+							// Div luar dipakai slick (dipaksa display:inline-block),
+							// jadi centering harus di div dalam supaya tidak ditimpa.
+							<div key={index}>
 								<div className="flex justify-center">
 									<img
-										src={images[0]}
-										alt="Image 0"
-										onClick={() => handleImageClick(images[0])}
+										src={imageUrl}
+										alt={`Image ${index}`}
+										onClick={() => handleImageClick(imageUrl)}
 										style={{ cursor: "pointer" }}
 									/>
 								</div>
-							) : (
-								<Slider {...mobileSettings}>
-									{images.map((imageUrl, index) => (
-										// Div luar dipakai slick (dipaksa display:inline-block),
-										// jadi centering harus di div dalam supaya tidak ditimpa.
-										<div key={index}>
-											<div className="flex justify-center">
-												<img
-													src={imageUrl}
-													alt={`Image ${index}`}
-													onClick={() => handleImageClick(imageUrl)}
-													style={{ cursor: "pointer" }}
-												/>
-											</div>
-										</div>
-									))}
-								</Slider>
-							)}
-						</div>
-
-						{/* Desktop */}
-						<div className="hidden lg:block">
-							{images.length <= 3 ? (
-								<div className="flex flex-wrap justify-center gap-6 px-[10%]">
-									{images.map((imageUrl, index) => (
-										<img
-											key={index}
-											src={imageUrl}
-											alt={`Image ${index}`}
-											onClick={() => handleImageClick(imageUrl)}
-											style={{ cursor: "pointer" }}
-										/>
-									))}
-								</div>
-							) : (
-								<Slider {...desktopSettings}>
-									{images.map((imageUrl, index) => (
-										<div key={index}>
-											<div className="flex justify-center">
-												<img
-													src={imageUrl}
-													alt={`Image ${index}`}
-													onClick={() => handleImageClick(imageUrl)}
-													style={{ cursor: "pointer" }}
-												/>
-											</div>
-										</div>
-									))}
-								</Slider>
-							)}
-						</div>
-					</>
+							</div>
+						))}
+					</Slider>
 				)}
 			</div>
 

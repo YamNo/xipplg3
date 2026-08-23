@@ -1,0 +1,69 @@
+rules_version = '2';
+
+// Rules Firestore untuk website kelas XI PPLG 3.
+// Paste isi file ini ke Firebase Console -> Firestore Database -> tab Rules -> Publish.
+//
+// Prinsipnya:
+// - Semua orang boleh MEMBACA (website ini publik).
+// - Pengunjung anonim hanya boleh MENAMBAH pesan chat dan mengunggah foto.
+// - Mengubah & menghapus apa pun hanya boleh oleh admin yang login.
+// - Admin = punya dokumen di koleksi "admins" dengan ID = UID akun-nya.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Daftar admin. Hanya bisa dibaca oleh pemilik akun itu sendiri (dipakai
+    // website untuk tahu apakah user yang login adalah admin). Menambah atau
+    // menghapus admin HANYA lewat Firebase Console, bukan dari website.
+    match /admins/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+
+    // Pesan Text Anonim: siapa saja boleh baca & kirim, tapi isinya dibatasi
+    // supaya tidak bisa dipakai menyimpan data sembarangan lewat API.
+    match /chats/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 60
+        && request.resource.data.keys().hasOnly(['message', 'sender', 'timestamp', 'userIp']);
+      allow update, delete: if isAdmin();
+    }
+
+    // Foto galeri: pengunjung boleh mengunggah, tapi WAJIB status "pending"
+    // supaya tidak bisa langsung tampil tanpa disetujui admin.
+    match /images/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.status == 'pending'
+        && request.resource.data.url is string
+        && request.resource.data.keys().hasOnly(['url', 'status', 'createdAt']);
+      allow update, delete: if isAdmin();
+    }
+
+    // Data yang hanya boleh diisi admin.
+    match /assignments/{id}   { allow read: if true; allow write: if isAdmin(); }
+    match /announcements/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /birthdays/{id}     { allow read: if true; allow write: if isAdmin(); }
+    match /events/{id}        { allow read: if true; allow write: if isAdmin(); }
+    match /blacklist_ips/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /schedule/{hari}    { allow read: if true; allow write: if isAdmin(); }
+    match /settings/{doc}     { allow read: if true; allow write: if isAdmin(); }
+
+    // Rating lama: biarkan bisa dibaca & ditambah, hapus hanya admin.
+    match /ratings/{id} {
+      allow read, create: if true;
+      allow update, delete: if isAdmin();
+    }
+
+    // Koleksi lain: tidak boleh diakses sama sekali.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

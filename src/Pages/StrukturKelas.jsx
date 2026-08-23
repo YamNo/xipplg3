@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react"
 import BorderStruktur from "../components/BorderStruktur"
+import { db } from "../firebase"
+import { doc, getDoc } from "firebase/firestore"
+import { DEFAULT_STRUKTUR } from "../data/defaults"
 import AOS from "aos"
 import "aos/dist/aos.css"
 
 const StrukturKelas = () => {
 	const [aosLoaded, setAosLoaded] = useState(false)
+	const [struktur, setStruktur] = useState(DEFAULT_STRUKTUR)
 
 	useEffect(() => {
 		if (!aosLoaded) {
@@ -14,11 +18,28 @@ const StrukturKelas = () => {
 		}
 	}, [aosLoaded])
 
+	useEffect(() => {
+		const ambilStruktur = async () => {
+			try {
+				const snap = await getDoc(doc(db, "settings", "struktur"))
+				if (snap.exists()) setStruktur({ ...DEFAULT_STRUKTUR, ...snap.data() })
+			} catch (err) {
+				// Gagal ambil dari Firestore -> tetap pakai nilai bawaan.
+				console.error("Gagal mengambil struktur kelas:", err)
+			}
+		}
+		ambilStruktur()
+	}, [])
+
+	const sekretaris = struktur.sekretaris?.length
+		? struktur.sekretaris
+		: DEFAULT_STRUKTUR.sekretaris
+
 	return (
 		<div className="z-1 relative h-auto lg:overflow-hidden">
 			{/* wali kelas */}
 			<div data-aos="fade-up" data-aos-duration="500" className="mt-14 md:mt-10">
-				<BorderStruktur Jabatan="Wali Kelas" Nama="Kristia Ninggutomo" Width="150px" />
+				<BorderStruktur Jabatan="Wali Kelas" Nama={struktur.waliKelas} Width="150px" />
 			</div>
 			<div className="flex flex-col justify-center items-center">
 				<img src="LineVertikal.svg" alt="" data-aos="fade-up" data-aos-duration="550" />
@@ -66,14 +87,14 @@ const StrukturKelas = () => {
 				{/* wakil dan ketua */}
 				<div className="flex relative top-[-3rem]" data-aos="fade-up" data-aos-duration="1200">
 					<div className="relative left-[0.2rem]">
-						<BorderStruktur Jabatan="Ketua Kelas" Nama="Antoni Oktariansyah" Width="120px" />
+						<BorderStruktur Jabatan="Ketua Kelas" Nama={struktur.ketua} Width="120px" />
 					</div>
 					<img src="LineHorizontalPendek.svg" className="relative top-3" />
 					<img src="LineHorizontalPendek.svg" className="relative top-3 hidden lg:flex" />
 					<img src="LineHorizontalPendek.svg" className="relative top-3 hidden lg:flex" />
 					<img src="LineHorizontalPendek.svg" className="relative top-3 hidden lg:flex" />
 					<div className="relative right-[0.2rem]">
-						<BorderStruktur Jabatan="Wakil Ketua" Nama="Reza Misbach" Width="120px" />
+						<BorderStruktur Jabatan="Wakil Ketua" Nama={struktur.wakil} Width="120px" />
 					</div>
 				</div>
 
@@ -95,9 +116,16 @@ const StrukturKelas = () => {
 					data-aos="fade-up"
 					data-aos-duration="1200">
 					<div className="flex-col">
-						<BorderStruktur Jabatan="Sekertaris" Nama="Salzabila Aurel liya" Width="120px" />
-						<div className="py-[3%]"></div>
-						<BorderStruktur Jabatan="" Nama="Safa Zulaika Ibrahim" Width="120px" />
+						{sekretaris.map((nama, idx) => (
+							<div key={idx}>
+								{idx > 0 && <div className="py-[3%]"></div>}
+								<BorderStruktur
+									Jabatan={idx === 0 ? "Sekertaris" : ""}
+									Nama={nama}
+									Width="120px"
+								/>
+							</div>
+						))}
 					</div>
 				</div>
 			</div>
