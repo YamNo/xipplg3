@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
-import { addDoc, collection, query, orderBy, onSnapshot, getDocs } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  getDocs,
+  doc,
+  getDoc,
+  setDoc,
+} from "firebase/firestore";
 import { db, auth } from "../firebase";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -14,6 +24,11 @@ function Chat() {
   const [isSending, setIsSending] = useState(false);
   const [isLoadingChat, setIsLoadingChat] = useState(true);
   const SEND_COOLDOWN_MS = 3000;
+  // ipapi.co memberi IP dalam bentuk jaringan (CIDR), jadi satu angka ini
+  // dibagi seluruh pengguna di jaringan yang sama — misalnya WiFi sekolah.
+  // Karena itu batasnya dibuat longgar: cukup untuk pemakaian normal satu
+  // kelas, tapi tetap menahan orang yang mencoba membanjiri chat.
+  const MAX_PESAN_HARIAN = 60;
 
   const chatsCollectionRef = collection(db, "chats");
   const messagesContainerRef = useRef(null);
@@ -57,11 +72,15 @@ function Chat() {
   }, [shouldScrollToBottom]);
 
   useEffect(() => {
-    // Mengambil alamat IP pengguna dan memeriksa batasan pesan
     getUserIp();
-    checkMessageCount();
     scrollToBottom();
   }, []);
+
+  // Kuota baru bisa dibaca setelah IP diketahui.
+  useEffect(() => {
+    if (!userIp) return;
+    bacaKuota(userIp).then(setMessageCount);
+  }, [userIp]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -93,31 +112,36 @@ function Chat() {
     }
   };
 
-  const checkMessageCount = () => {
-    const userIpAddress = userIp;
-    const currentDate = new Date();
-    const currentDateString = currentDate.toDateString();
-    const storedDateString = localStorage.getItem("messageCountDate");
+  // ID dokumen tidak boleh memuat "/", sementara IP dari ipapi.co berbentuk
+  // CIDR (mis. 125.165.189.0/24).
+  const ipKey = (ip) => (ip || "").replace(/[/#?[\]*]/g, "_");
 
-    if (currentDateString === storedDateString) {
-      // Jika tanggal saat ini sama dengan tanggal yang disimpan, periksa batasan pesan
-      const userSentMessageCount = parseInt(localStorage.getItem(userIpAddress)) || 0;
-      if (userSentMessageCount >= 20) { // Batasan pesan per hari (2 pesan)
-        Swal.fire({
-          icon: "error",
-          title: "Message limit exceeded",
-          text: "You have reached your daily message limit.",
-          customClass: {
-            container: "sweet-alert-container",
-          },
-        });
-      } else {
-        setMessageCount(userSentMessageCount);
-      }
-    } else {
-      // Jika tanggal berbeda, bersihkan data penghitungan pesan sebelumnya
-      localStorage.removeItem(userIpAddress);
-      localStorage.setItem("messageCountDate", currentDateString);
+  const hariIniStr = () => new Date().toLocaleDateString("sv-SE");
+
+  // Hitungan disimpan di Firestore, bukan localStorage, supaya tidak bisa
+  // direset hanya dengan membuka mode incognito atau menghapus data situs.
+  const bacaKuota = async (ip) => {
+    if (!ip) return 0;
+    try {
+      const snap = await getDoc(doc(db, "rate_limits", ipKey(ip)));
+      if (!snap.exists()) return 0;
+      const data = snap.data();
+      return data.date === hariIniStr() ? data.count || 0 : 0;
+    } catch (error) {
+      console.error("Gagal membaca kuota pesan:", error);
+      return 0;
+    }
+  };
+
+  const simpanKuota = async (ip, jumlah) => {
+    if (!ip) return;
+    try {
+      await setDoc(doc(db, "rate_limits", ipKey(ip)), {
+        date: hariIniStr(),
+        count: jumlah,
+      });
+    } catch (error) {
+      console.error("Gagal menyimpan kuota pesan:", error);
     }
   };
 
@@ -159,13 +183,16 @@ function Chat() {
 
       const senderImageURL = auth.currentUser?.photoURL || "/AnonimUser.png";
       const trimmedMessage = message.trim().substring(0, 60);
-      const userIpAddress = userIp;
 
-      if (messageCount >= 20) { // Batasan pesan per hari (20 pesan)
+      // Ambil angka terbaru dari Firestore, bukan dari state, supaya membuka tab
+      // baru atau incognito tidak mengembalikan kuota.
+      const terpakai = await bacaKuota(userIp);
+      if (terpakai >= MAX_PESAN_HARIAN) {
+        setMessageCount(terpakai);
         Swal.fire({
           icon: "error",
-          title: "Message limit exceeded",
-          text: "You have reached your daily message limit.",
+          title: "Batas pesan tercapai",
+          text: `Maksimal ${MAX_PESAN_HARIAN} pesan per hari untuk jaringan ini. Coba lagi besok.`,
           customClass: {
             container: "sweet-alert-container",
           },
@@ -173,8 +200,8 @@ function Chat() {
         return;
       }
 
-      const updatedSentMessageCount = messageCount + 1;
-      localStorage.setItem(userIpAddress, updatedSentMessageCount.toString());
+      const updatedSentMessageCount = terpakai + 1;
+      await simpanKuota(userIp, updatedSentMessageCount);
       setMessageCount(updatedSentMessageCount);
 
       setIsSending(true);
@@ -208,7 +235,7 @@ function Chat() {
 
   return (
     <div className="" id="ChatAnonim">
-      <div className="text-center text-4xl font-semibold" id="Glow">
+      <div className="text-center text-4xl font-semibold Glow">
         Text Anonim
       </div>
 

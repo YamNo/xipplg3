@@ -284,7 +284,8 @@ body {
 	border: 1px solid rgba(255, 255, 255, 0.09);
 }
 
-#AngkaGradientBlue {
+#AngkaGradientBlue,
+.AngkaGradientBlue {
 	-webkit-text-stroke: 1px #14a6ef3f; /* Menggunakan efek outline teks dengan warna hitam */
 	background: linear-gradient(to bottom right, #96dcff, #14a6ef 55%);
 	filter: brightness(1.2);
@@ -294,7 +295,8 @@ body {
 	text-shadow: #a4dcf893 2px 0 20px;
 }
 
-#AngkaGradientPink {
+#AngkaGradientPink,
+.AngkaGradientPink {
 	-webkit-text-stroke: 1px #d41a773d; /* Menggunakan efek outline teks dengan warna hitam */
 	background: linear-gradient(to top right, #fab6e7, #d41a77 80%);
 	filter: brightness(1.2);
@@ -389,12 +391,16 @@ body {
 		radial-gradient(at 81.4% 65.2%, hsl(0, 0%, 12%) 0px, transparent 50%);
 }
 
-#Glow {
+/* .Glow dipakai di tempat yang butuh efek ini lebih dari sekali dalam satu
+   halaman — id harus unik, jadi tidak boleh id="Glow" berulang. */
+#Glow,
+.Glow {
 	text-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 255, 255, 0.5),
 		0 0 15px rgba(255, 255, 255, 0.5);
 }
 
-#UserButton {
+#UserButton,
+.UserButton {
 	background: rgba(255, 255, 255, 0.14);
 	border-radius: 50%;
 	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
@@ -403,7 +409,8 @@ body {
 	border: 1px solid rgba(255, 255, 255, 0.09);
 }
 
-#UserButton img {
+#UserButton img,
+.UserButton img {
 	filter: brightness(0) invert(1);
 }
 

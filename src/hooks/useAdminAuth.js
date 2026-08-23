@@ -11,7 +11,10 @@ import { useEffect, useState } from "react"
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD
 
-const STORAGE_KEY = "isAdmin"
+const STORAGE_KEY = "adminSession"
+// Sesi berakhir setelah 4 jam supaya panel tidak tetap terbuka kalau
+// perangkatnya dipakai orang lain.
+const SESSION_MS = 4 * 60 * 60 * 1000
 
 export const useAdminAuth = () => {
 	const [isAdmin, setIsAdmin] = useState(false)
@@ -20,12 +23,42 @@ export const useAdminAuth = () => {
 
 	useEffect(() => {
 		try {
-			setIsAdmin(localStorage.getItem(STORAGE_KEY) === "true")
+			const kedaluwarsa = parseInt(localStorage.getItem(STORAGE_KEY), 10)
+			if (kedaluwarsa && Date.now() < kedaluwarsa) {
+				setIsAdmin(true)
+			} else {
+				// Bersihkan sesi lama sekaligus kunci versi lama (isAdmin).
+				localStorage.removeItem(STORAGE_KEY)
+				localStorage.removeItem("isAdmin")
+				setIsAdmin(false)
+			}
 		} catch {
 			setIsAdmin(false)
 		}
 		setChecking(false)
 	}, [])
+
+	// Tendang keluar otomatis saat sesi habis walau tab dibiarkan terbuka.
+	useEffect(() => {
+		if (!isAdmin) return
+		let sisa = SESSION_MS
+		try {
+			const kedaluwarsa = parseInt(localStorage.getItem(STORAGE_KEY), 10)
+			if (kedaluwarsa) sisa = Math.max(0, kedaluwarsa - Date.now())
+		} catch {
+			// pakai default
+		}
+		const timer = setTimeout(() => {
+			try {
+				localStorage.removeItem(STORAGE_KEY)
+			} catch {
+				// abaikan
+			}
+			setIsAdmin(false)
+			setError("Sesi berakhir, silakan login lagi.")
+		}, sisa)
+		return () => clearTimeout(timer)
+	}, [isAdmin])
 
 	const login = async (email, password) => {
 		setError("")
@@ -43,7 +76,7 @@ export const useAdminAuth = () => {
 		}
 
 		try {
-			localStorage.setItem(STORAGE_KEY, "true")
+			localStorage.setItem(STORAGE_KEY, String(Date.now() + SESSION_MS))
 		} catch {
 			// Kalau localStorage diblokir, sesi tetap jalan sampai halaman ditutup.
 		}

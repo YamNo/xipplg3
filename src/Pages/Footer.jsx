@@ -18,8 +18,22 @@ const Footer = () => {
 							<h2 className="mb-4 text-sm font-semibold uppercase text-white">CREATED BY</h2>
 							<ul className="text-gray-400 dark:text-gray-400 font-medium">
 								<li className="mb-2">
+									<a
+										href="https://www.instagram.com/arpa25_/"
+										target="_blank"
+										rel="noopener noreferrer"
+										className="hover:underline">
+										Arfah
+									</a>
+								</li>
+								<li className="mb-2">
 									<a href="/Changelog" className="hover:underline">
 										Changelog
+									</a>
+								</li>
+								<li className="mb-2">
+									<a href="/Penghitung_Skor" className="hover:underline">
+										Penghitung Skor
 									</a>
 								</li>
 							</ul>

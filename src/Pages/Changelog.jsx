@@ -4,6 +4,36 @@ import Footer from "./Footer"
 // Setiap ada update, tambahkan entri baru di paling atas array ini.
 const CHANGELOG = [
 	{
+		version: "v1.5",
+		date: "23 Agustus 2026",
+		changes: [
+			{
+				type: "Baru",
+				text: "Halaman Penghitung Skor di /Penghitung_Skor — papan skor 2 tim dengan pengumuman suara dan pintasan keyboard.",
+			},
+			{
+				type: "Baru",
+				text: "Tugas yang sudah lewat deadline terhapus otomatis dari halaman Tugas & PR.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Website dibagi jadi beberapa file agar unduhan awal lebih ringan dan terasa lebih cepat.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Sesi admin berakhir otomatis setelah 4 jam, jadi panel tidak tetap terbuka di perangkat orang lain.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Batas pesan harian Text Anonim dipindah ke server, tidak bisa lagi direset lewat mode incognito.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Rapikan penanda elemen yang ganda supaya halaman lebih ramah pembaca layar.",
+			},
+		],
+	},
+	{
 		version: "v1.4",
 		date: "23 Agustus 2026",
 		changes: [
@@ -106,7 +136,7 @@ const Changelog = () => {
 	return (
 		<div className="text-white min-h-screen flex flex-col">
 			<div className="px-[10%] py-16 lg:py-20 max-w-2xl mx-auto flex-1 w-full">
-				<h1 className="text-3xl md:text-4xl font-bold text-center mb-3" id="Glow">
+				<h1 className="text-3xl md:text-4xl font-bold text-center mb-3 Glow">
 					Changelog
 				</h1>
 				<p className="text-center opacity-50 text-sm mb-12">

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { db } from "../firebase"
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore"
+import { collection, query, orderBy, onSnapshot, getDocs, deleteDoc, doc } from "firebase/firestore"
 import Footer from "./Footer"
 
 const formatDeadline = (deadline) => {
@@ -19,6 +19,34 @@ const TugasPRPage = () => {
 		typeof Notification !== "undefined" ? Notification.permission : "unsupported",
 	)
 	const knownIds = useRef(null)
+
+	// Hapus otomatis tugas yang deadline-nya sudah lewat, dijalankan sekali saat
+	// halaman dibuka. Diberi tenggang 1 hari supaya tugas dengan deadline "hari
+	// ini" tidak hilang sebelum harinya selesai.
+	useEffect(() => {
+		const bersihkanKedaluwarsa = async () => {
+			try {
+				const batas = new Date()
+				batas.setDate(batas.getDate() - 1)
+				const batasStr = batas.toLocaleDateString("sv-SE")
+
+				const snap = await getDocs(collection(db, "assignments"))
+				const kedaluwarsa = snap.docs.filter((d) => {
+					const deadline = d.data().deadline
+					return deadline && deadline < batasStr
+				})
+
+				await Promise.all(kedaluwarsa.map((d) => deleteDoc(doc(db, "assignments", d.id))))
+				if (kedaluwarsa.length > 0) {
+					console.log(`${kedaluwarsa.length} tugas kedaluwarsa dihapus otomatis.`)
+				}
+			} catch (err) {
+				console.error("Gagal menghapus tugas kedaluwarsa:", err)
+			}
+		}
+
+		bersihkanKedaluwarsa()
+	}, [])
 
 	useEffect(() => {
 		const q = query(collection(db, "assignments"), orderBy("deadline", "asc"))
@@ -56,7 +84,7 @@ const TugasPRPage = () => {
 	return (
 		<div className="text-white min-h-screen flex flex-col">
 			<div className="px-[10%] py-16 lg:py-20 max-w-2xl mx-auto flex-1 w-full">
-				<h1 className="text-3xl md:text-4xl font-bold text-center mb-6" id="Glow">
+				<h1 className="text-3xl md:text-4xl font-bold text-center mb-6 Glow">
 					Tugas & PR
 				</h1>
 

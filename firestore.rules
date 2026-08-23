@@ -42,6 +42,16 @@ service cloud.firestore {
       allow update, delete: if true;
     }
 
+    // Kuota pesan harian per jaringan. Hanya boleh berisi tanggal + angka,
+    // supaya tidak bisa dipakai menyimpan data lain.
+    match /rate_limits/{ip} {
+      allow read: if true;
+      allow write: if request.resource.data.keys().hasOnly(['date', 'count'])
+        && request.resource.data.date is string
+        && request.resource.data.count is int
+        && request.resource.data.count >= 0;
+    }
+
     match /assignments/{id}   { allow read, write: if true; }
     match /announcements/{id} { allow read, write: if true; }
     match /birthdays/{id}     { allow read, write: if true; }

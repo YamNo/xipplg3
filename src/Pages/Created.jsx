@@ -11,7 +11,7 @@ const Created = () => {
 				/>
 
 				<h5 className="text-[1.1rem] font-semibold opacity-80">Di Balik Layar</h5>
-				<h1 className="text-4xl md:text-6xl font-extrabold mt-2" id="Glow">
+				<h1 className="text-4xl md:text-6xl font-extrabold mt-2 Glow">
 					Tim Kami
 				</h1>
 				<p className="max-w-md mt-6 opacity-70 leading-relaxed">

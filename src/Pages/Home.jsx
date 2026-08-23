@@ -15,7 +15,7 @@ const Home = () => {
 				<div className="hidden lg:block">
 					<div className="flex justify-center items-center flex-col h-[100vh]">
 						<h5 className="text-[1.4rem] font-semibold">Hi, Visitor!</h5>
-						<h1 className="text-7xl font-extrabold" id="Glow">
+						<h1 className="text-7xl font-extrabold Glow">
 							WELCOME
 						</h1>
 						<h6 className="text-sm" style={{ letterSpacing: "5px" }}>
@@ -29,18 +29,18 @@ const Home = () => {
 				<div
 					className="border-2 flex justify-between px-10 text-4xl font-bold py-2 relative"
 					id="TotalSiswa">
-					<div id="AngkaGradientBlue" className="flex items-center justify-center ">
+					<div className="flex items-center justify-center AngkaGradientBlue">
 						26
 					</div>
 					<div className="">
-						<span id="AngkaGradientBlue" className="text-5xl">
+						<span className="text-5xl AngkaGradientBlue">
 							3
 						</span>
-						<span id="AngkaGradientPink" className="text-5xl">
+						<span className="text-5xl AngkaGradientPink">
 							0
 						</span>
 					</div>
-					<div id="AngkaGradientPink" className="flex items-center justify-center">
+					<div className="flex items-center justify-center AngkaGradientPink">
 						4
 					</div>
 				</div>

@@ -34,7 +34,7 @@ const Navbar = () => {
 		<>
 			{/* Mobile */}
 			<div className="flex justify-between relative top-3 lg:hidden">
-				<div className="w-10 h-10 rounded-full flex justify-center items-center" id="UserButton">
+				<div className="w-10 h-10 rounded-full flex justify-center items-center UserButton">
 					<img src="/NavIcon.png" alt="" className="w-6 h-6" onClick={toggleMenu} />
 				</div>
 				<div className={`text-center text-white ${isMenuOpen ? "hidden" : ""}`}>
@@ -42,9 +42,7 @@ const Navbar = () => {
 					<div className="font-bold text-[1rem]">WELCOME</div>
 				</div>
 
-				<div
-					className={`w-10 h-10 rounded-full flex justify-center items-center `}
-					id="UserButton">
+				<div className="w-10 h-10 rounded-full flex justify-center items-center UserButton">
 					<img src="/user.svg" alt="" className="" />
 				</div>
 

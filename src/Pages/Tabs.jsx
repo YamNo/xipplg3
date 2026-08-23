@@ -70,8 +70,7 @@ export default function FullWidthTabs() {
 	return (
 		<div className="md:px-[10%]  md:mt-5 mt-8" id="Tabs" data-aos="fade-up" data-aos-duration="800" >
 			<div
-				className="font-medium text-[1.6rem] md:text-[1.8rem] relative md:top-[2.8rem] top-[2.7rem] text-center text-white"
-				id="Glow">
+				className="font-medium text-[1.6rem] md:text-[1.8rem] relative md:top-[2.8rem] top-[2.7rem] text-center text-white Glow">
 				&
 			</div>
 			<Box sx={{ width: "100%" }}>
@@ -95,8 +94,7 @@ export default function FullWidthTabs() {
 								borderBottom: "2px solid white", 
 							},
 						}}
-						className="font-medium text-white text-2xl text-center mt-16"
-						id="Glow">
+						className="font-medium text-white text-2xl text-center mt-16 Glow">
 						<Tab
 							label="Structure"
 							{...a11yProps(0)}
@@ -110,8 +108,7 @@ export default function FullWidthTabs() {
 								marginRight: "0.7rem",
 							}}
 						
-							className="font-medium text-white text-2xl text-center mt-16 "
-							id="Glow"
+							className="font-medium text-white text-2xl text-center mt-16 Glow"
 						/>
 
 						<Tab
@@ -127,8 +124,7 @@ export default function FullWidthTabs() {
 								marginLeft: "0.7rem",
 							}}
 							// className untuk menentukan gaya tab.
-							className="font-medium text-white text-2xl text-center mt-16 "
-							id="Glow"
+							className="font-medium text-white text-2xl text-center mt-16 Glow"
 						/>
 					</Tabs>
 				</AppBar>
