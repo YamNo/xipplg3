@@ -9,6 +9,8 @@
 //                        id pengirim supaya bisa didaftarkan.
 //   FIREBASE_PROJECT_ID  id project Firestore (default: websmkpplg3)
 
+import { isiNotif, kirimPushKeSemua } from "./_lib/push.js"
+
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID || "websmkpplg3"
 const FS_BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`
 
@@ -27,7 +29,6 @@ const BANTUAN = `Halo! Kirim salah satu perintah berikut:
 
 🎂 Ulang tahun
 /ultah Budi Santoso | 2010-05-17
-
 Lainnya:
 /daftar - lihat data yang sudah masuk
 /bantuan - tampilkan pesan ini
@@ -55,6 +56,8 @@ const panggilApi = async (metode, body) => {
 const kirimPesan = (chatId, text) => panggilApi("sendMessage", { chat_id: chatId, text })
 
 const nilai = (v) => {
+	// Nilai yang sudah berbentuk Firestore (mis. { timestampValue }) dipakai apa adanya.
+	if (v && typeof v === "object" && "timestampValue" in v) return v
 	if (typeof v === "boolean") return { booleanValue: v }
 	if (typeof v === "number") return { integerValue: String(v) }
 	return { stringValue: String(v) }
@@ -84,6 +87,20 @@ const ubahField = async (path, field, value) => {
 const hapusDoc = async (path) => {
 	const res = await fetch(`${FS_BASE}/${path}`, { method: "DELETE" })
 	if (!res.ok) throw new Error(`Firestore ${res.status}: ${(await res.text()).slice(0, 200)}`)
+}
+
+// Simpan data lalu kirim notifikasi push ke semua perangkat yang berlangganan.
+// pushedAt ikut disimpan supaya /api/notify-push tidak mengirim ulang.
+const simpanDanKabari = async (koleksi, data) => {
+	const hasil = await simpan(koleksi, { ...data, pushedAt: { timestampValue: sekarangISO() } })
+	const id = String(hasil.name || "").split("/").pop()
+	try {
+		const { terkirim = 0 } = await kirimPushKeSemua(isiNotif(koleksi, data, id))
+		return terkirim > 0 ? `\n🔔 Notifikasi terkirim ke ${terkirim} perangkat` : ""
+	} catch (err) {
+		console.error("Push gagal:", err)
+		return "\n⚠️ Data tersimpan, tapi notifikasi gagal dikirim"
+	}
 }
 
 const ambil = async (koleksi) => {
@@ -135,13 +152,13 @@ const perintah = {
 		const subject = bagian[0]
 		const description = bagian.slice(1, -1).join(" - ")
 
-		await simpan("assignments", {
+		const notif = await simpanDanKabari("assignments", {
 			subject,
 			description,
 			deadline,
 			createdAt: { timestampValue: sekarangISO() },
 		})
-		return `✅ Tugas ditambahkan:\n📝 ${subject}\n${description || "(tanpa deskripsi)"}\n⏰ Deadline ${deadline}`
+		return `✅ Tugas ditambahkan:\n📝 ${subject}\n${description || "(tanpa deskripsi)"}\n⏰ Deadline ${deadline}${notif}`
 	},
 
 	async pengumuman(arg) {
@@ -154,10 +171,10 @@ const perintah = {
 		const data = { text: teks, createdAt: { timestampValue: sekarangISO() } }
 		if (expiresAt) data.expiresAt = expiresAt
 
-		await simpan("announcements", data)
+		const notif = await simpanDanKabari("announcements", data)
 		return `✅ Pengumuman ditambahkan:\n📢 ${teks}\n${
 			expiresAt ? `🗑 Hilang otomatis pada ${expiresAt}` : "🗑 Tidak dihapus otomatis"
-		}`
+		}${notif}`
 	},
 
 	async acara(arg) {
@@ -172,10 +189,10 @@ const perintah = {
 		const data = { title, date }
 		if (expiresAt) data.expiresAt = expiresAt
 
-		await simpan("events", data)
+		const notif = await simpanDanKabari("events", data)
 		return `✅ Acara ditambahkan:\n⏳ ${title}\n📅 ${date}\n${
 			expiresAt ? `🗑 Hilang otomatis pada ${expiresAt}` : "🗑 Hilang sehari setelah acaranya"
-		}`
+		}${notif}`
 	},
 
 	async ultah(arg) {

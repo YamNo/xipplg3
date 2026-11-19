@@ -14,6 +14,7 @@ import {
 	serverTimestamp,
 } from "firebase/firestore"
 import { useAdminAuth } from "../hooks/useAdminAuth"
+import { kabariPush } from "../utils/push"
 import { HARI, LABEL_HARI, DEFAULT_JADWAL, DEFAULT_STRUKTUR } from "../data/defaults"
 
 const inputClass =
@@ -26,7 +27,6 @@ const cardClass = "bg-white/5 border border-white/10 rounded-xl p-3"
 const AdminLogin = () => {
 	const { user, isAdmin, checking, error: authError, login, logout } = useAdminAuth()
 
-	const [email, setEmail] = useState("")
 	const [password, setPassword] = useState("")
 	const [loggingIn, setLoggingIn] = useState(false)
 
@@ -123,7 +123,7 @@ const AdminLogin = () => {
 	const handleLogin = async (e) => {
 		e.preventDefault()
 		setLoggingIn(true)
-		await login(email, password)
+		await login(password)
 		setLoggingIn(false)
 	}
 
@@ -141,12 +141,13 @@ const AdminLogin = () => {
 	const addTask = async (e) => {
 		e.preventDefault()
 		if (!taskSubject.trim() || !taskDeadline) return
-		await addDoc(collection(db, "assignments"), {
+		const baru = await addDoc(collection(db, "assignments"), {
 			subject: taskSubject.trim(),
 			description: taskDescription.trim(),
 			deadline: taskDeadline,
 			createdAt: serverTimestamp(),
 		})
+		kabariPush("assignments", baru.id)
 		setTaskSubject("")
 		setTaskDescription("")
 		setTaskDeadline("")
@@ -161,11 +162,12 @@ const AdminLogin = () => {
 	const addAnnouncement = async (e) => {
 		e.preventDefault()
 		if (!announcementText.trim()) return
-		await addDoc(collection(db, "announcements"), {
+		const baru = await addDoc(collection(db, "announcements"), {
 			text: announcementText.trim(),
 			createdAt: serverTimestamp(),
 			...(announcementExpiry ? { expiresAt: announcementExpiry } : {}),
 		})
+		kabariPush("announcements", baru.id)
 		setAnnouncementText("")
 		setAnnouncementExpiry("")
 		fetchAll()
@@ -196,11 +198,12 @@ const AdminLogin = () => {
 	const addEvent = async (e) => {
 		e.preventDefault()
 		if (!eventTitle.trim() || !eventDate) return
-		await addDoc(collection(db, "events"), {
+		const baru = await addDoc(collection(db, "events"), {
 			title: eventTitle.trim(),
 			date: eventDate,
 			...(eventExpiry ? { expiresAt: eventExpiry } : {}),
 		})
+		kabariPush("events", baru.id)
 		setEventTitle("")
 		setEventDate("")
 		setEventExpiry("")
@@ -288,22 +291,15 @@ const AdminLogin = () => {
 				<form onSubmit={handleLogin} className="w-full max-w-sm">
 					<h1 className="text-2xl font-bold mb-2 text-center">Admin Login</h1>
 					<p className="text-xs opacity-50 text-center mb-6">
-						Masuk dengan email &amp; password admin.
+						Masukkan password admin.
 					</p>
-					<input
-						type="email"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						placeholder="Email admin"
-						autoComplete="username"
-						className={`${inputClass} mb-3`}
-					/>
 					<input
 						type="password"
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
 						placeholder="Password"
 						autoComplete="current-password"
+						autoFocus
 						className={`${inputClass} mb-3`}
 					/>
 					{authError && <p className="text-red-400 text-sm mb-3 break-words">{authError}</p>}
@@ -352,7 +348,7 @@ const AdminLogin = () => {
 			<div className="flex justify-between items-start mb-2 gap-4">
 				<h1 className="text-2xl font-bold">Panel Admin</h1>
 				<div className="text-right shrink-0">
-					<p className="text-xs opacity-50 break-all">{user.email}</p>
+					<p className="text-xs opacity-50 break-all">{user.name}</p>
 					<button onClick={logout} className="text-sm opacity-60 hover:underline">
 						Logout
 					</button>

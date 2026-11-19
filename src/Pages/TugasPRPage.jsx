@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { db } from "../firebase"
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore"
 import { bersihkanKedaluwarsa, sudahKedaluwarsa } from "../utils/kedaluwarsa"
 import Footer from "./Footer"
+import TombolNotif from "../components/TombolNotif"
 
 const formatDeadline = (deadline) => {
 	if (!deadline) return ""
@@ -16,10 +17,6 @@ const formatDeadline = (deadline) => {
 
 const TugasPRPage = () => {
 	const [tasks, setTasks] = useState([])
-	const [notifStatus, setNotifStatus] = useState(
-		typeof Notification !== "undefined" ? Notification.permission : "unsupported",
-	)
-	const knownIds = useRef(null)
 
 	// Hapus otomatis data kedaluwarsa saat halaman dibuka. Aturan tanggalnya
 	// terpusat di src/utils/kedaluwarsa.js.
@@ -34,33 +31,10 @@ const TugasPRPage = () => {
 				.map((d) => ({ id: d.id, ...d.data() }))
 				.filter((t) => !sudahKedaluwarsa("assignments", t))
 			setTasks(list)
-
-			// Baru kirim notifikasi untuk tugas yang ditambahkan SETELAH halaman ini dibuka,
-			// bukan untuk semua tugas yang sudah ada saat pertama kali load.
-			if (knownIds.current === null) {
-				knownIds.current = new Set(list.map((t) => t.id))
-				return
-			}
-			const newTasks = list.filter((t) => !knownIds.current.has(t.id))
-			knownIds.current = new Set(list.map((t) => t.id))
-
-			if (Notification.permission === "granted") {
-				newTasks.forEach((t) => {
-					new Notification("Tugas Baru: " + t.subject, {
-						body: t.description || "Ada tugas baru, cek deadline-nya!",
-					})
-				})
-			}
 		})
 
 		return () => unsubscribe()
 	}, [])
-
-	const enableNotifications = async () => {
-		if (typeof Notification === "undefined") return
-		const result = await Notification.requestPermission()
-		setNotifStatus(result)
-	}
 
 	return (
 		<div className="text-white min-h-screen flex flex-col">
@@ -70,25 +44,8 @@ const TugasPRPage = () => {
 				</h1>
 
 				<div className="flex justify-center mb-10">
-					{notifStatus === "granted" ? (
-						<p className="text-sm opacity-60">🔔 Notifikasi aktif</p>
-					) : notifStatus === "denied" ? (
-						<p className="text-sm opacity-60">
-							Notifikasi diblokir. Aktifkan lewat pengaturan izin browser untuk situs ini.
-						</p>
-					) : notifStatus === "unsupported" ? null : (
-						<button
-							onClick={enableNotifications}
-							className="px-4 py-2 rounded-lg bg-white text-black text-sm font-semibold hover:bg-gray-200">
-							Aktifkan Notifikasi
-						</button>
-					)}
+					<TombolNotif />
 				</div>
-
-				<p className="text-xs opacity-40 text-center mb-8 max-w-sm mx-auto">
-					Notifikasi muncul otomatis kalau ada tugas baru, selama tab/browser situs ini masih
-					terbuka (tidak muncul kalau browser ditutup total).
-				</p>
 
 				<div className="flex flex-col gap-3">
 					{tasks.length === 0 && (

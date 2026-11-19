@@ -4,6 +4,56 @@ import Footer from "./Footer"
 // Setiap ada update, tambahkan entri baru di paling atas array ini.
 const CHANGELOG = [
 	{
+		version: "v1.7",
+		date: "19 November 2026",
+		changes: [
+			{
+				type: "Baru",
+				text: "Notifikasi push seperti aplikasi: tugas baru, pengumuman, dan acara langsung muncul di HP walaupun website sedang ditutup. Aktifkan lewat tombol \"Aktifkan Notifikasi\" di beranda atau halaman Tugas & PR.",
+			},
+			{
+				type: "Baru",
+				text: "Pengingat otomatis setiap pagi: tugas yang deadline-nya besok, acara hari ini, dan ulang tahun hari ini.",
+			},
+			{
+				type: "Perubahan",
+				text: "Logo baru LEVN XI-III, dipakai juga sebagai ikon aplikasi saat dipasang di HP.",
+			},
+			{
+				type: "Perubahan",
+				text: "Kredit di footer sekarang Nusa Studios.",
+			},
+			{
+				type: "Baru",
+				text: "Link Panel Admin di footer, jadi tidak perlu mengetik /login/admin manual.",
+			},
+			{
+				type: "Perubahan",
+				text: "Login admin cukup pakai password, tanpa perlu mengisi email.",
+			},
+			{
+				type: "Baru",
+				text: "Kartu \"Pelajaran sekarang\" di beranda: otomatis menampilkan pelajaran yang sedang berlangsung, sisa waktunya, dan pelajaran berikutnya sesuai jam dan hari.",
+			},
+			{
+				type: "Perubahan",
+				text: "Footer kini menampilkan nama kelas di samping logo, plus kata-kata yang berganti setiap hari.",
+			},
+			{
+				type: "Perubahan",
+				text: "Notifikasi lama di halaman Tugas & PR (yang hanya muncul selama tab terbuka) diganti dengan notifikasi push yang baru.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Pengumuman dan tugas yang dikirim lewat bot Telegram kini tersimpan dengan tanggal yang benar, jadi urutannya tidak lagi selalu nangkring di paling atas.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Bersihkan peringatan pengaturan aplikasi (PWA) di console browser.",
+			},
+		],
+	},
+	{
 		version: "v1.6",
 		date: "23 Agustus 2026",
 		changes: [

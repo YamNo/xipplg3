@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react"
 
-// Kredensial admin dibaca dari environment variable (.env / Vercel).
+// Password admin dibaca dari environment variable (.env / Vercel).
+// Login cukup pakai password, tanpa email.
 //
 // CATATAN KEAMANAN: Vite menanamkan nilai VITE_* ke dalam bundle JavaScript
-// yang dikirim ke browser, jadi email & password ini BISA dibaca pengunjung
+// yang dikirim ke browser, jadi password ini BISA dibaca pengunjung
 // lewat view-source. Perlindungannya hanya menghalangi orang awam, bukan
 // pengamanan sungguhan. Untuk pengamanan nyata, gunakan Firebase
 // Authentication (lihat riwayat file ini) supaya password tidak pernah
 // ikut ke sisi browser.
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD
 
 const STORAGE_KEY = "adminSession"
@@ -60,18 +60,16 @@ export const useAdminAuth = () => {
 		return () => clearTimeout(timer)
 	}, [isAdmin])
 
-	const login = async (email, password) => {
+	const login = async (password) => {
 		setError("")
 
-		if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-			setError(
-				"VITE_ADMIN_EMAIL / VITE_ADMIN_PASSWORD belum diisi di .env (dan Environment Variables Vercel).",
-			)
+		if (!ADMIN_PASSWORD) {
+			setError("VITE_ADMIN_PASSWORD belum diisi di .env (dan Environment Variables Vercel).")
 			return false
 		}
 
-		if (email.trim().toLowerCase() !== ADMIN_EMAIL.toLowerCase() || password !== ADMIN_PASSWORD) {
-			setError("Email atau password salah.")
+		if (password !== ADMIN_PASSWORD) {
+			setError("Password salah.")
 			return false
 		}
 
@@ -94,7 +92,7 @@ export const useAdminAuth = () => {
 	}
 
 	// user disediakan supaya bentuk datanya tetap sama seperti sebelumnya.
-	const user = isAdmin ? { email: ADMIN_EMAIL } : null
+	const user = isAdmin ? { name: "Admin" } : null
 
 	return { user, isAdmin, checking, error, login, logout }
 }

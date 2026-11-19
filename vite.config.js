@@ -49,6 +49,9 @@ export default defineConfig({
         // Permintaan ke API/webhook jangan pernah dilayani service worker.
         navigateFallbackDenylist: [/^\/api\//],
         cleanupOutdatedCaches: true,
+        // Penangan notifikasi push (public/push-sw.js) supaya notif tetap
+        // muncul walaupun website sedang ditutup.
+        importScripts: ['push-sw.js'],
       },
     }),
   ],

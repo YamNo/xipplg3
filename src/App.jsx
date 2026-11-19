@@ -5,6 +5,8 @@ import FullWidthTabs from "./Pages/Tabs"
 import Footer from "./Pages/Footer"
 import Chat from "./components/ChatAnonim"
 import NotifPopup from "./components/NotifPopup"
+import TombolNotif from "./components/TombolNotif"
+import PelajaranSekarang from "./components/PelajaranSekarang"
 import AOS from "aos"
 import "aos/dist/aos.css"
 
@@ -19,6 +21,11 @@ function App() {
 			<NotifPopup />
 
 			<Home />
+
+			<div className="px-[10%] mt-6 lg:mt-0 lg:mb-10 flex flex-col items-center gap-4">
+				<PelajaranSekarang />
+				<TombolNotif />
+			</div>
 
 			<Carousel />
 			<FullWidthTabs />

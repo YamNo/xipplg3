@@ -7,7 +7,7 @@ const Created = () => {
 				<img
 					src="/LogoPPLG3.jpg"
 					alt=""
-					className="h-20 w-20 rounded-full brightness-200 mb-8"
+					className="h-20 w-20 rounded-full mb-8"
 				/>
 
 				<h5 className="text-[1.1rem] font-semibold opacity-80">Di Balik Layar</h5>
