@@ -40,6 +40,22 @@ const CHANGELOG = [
 				text: "Footer kini menampilkan nama kelas di samping logo, plus kata-kata yang berganti setiap hari.",
 			},
 			{
+				type: "Baru",
+				text: "Panel admin dibagi jadi tab (Foto, Chat, Tugas, Info Kelas, Jadwal), jadi tidak perlu scroll satu halaman panjang.",
+			},
+			{
+				type: "Baru",
+				text: "Tugas, pengumuman, acara, dan ulang tahun bisa diedit langsung dari panel admin tanpa harus dihapus dulu.",
+			},
+			{
+				type: "Baru",
+				text: "Foto dan pesan Text Anonim bisa dicentang lalu disetujui atau dihapus sekaligus.",
+			},
+			{
+				type: "Perbaikan",
+				text: "Tombol Hapus di panel admin sekarang selalu menanyakan konfirmasi dulu, supaya tidak terhapus karena salah pencet.",
+			},
+			{
 				type: "Perubahan",
 				text: "Notifikasi lama di halaman Tugas & PR (yang hanya muncul selama tab terbuka) diganti dengan notifikasi push yang baru.",
 			},
