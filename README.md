@@ -101,17 +101,21 @@ Buka **Panel Admin** di footer, atau langsung ke `/login/admin`, lalu masukkan p
 
 ## Bot Telegram
 
-Kirim `/bantuan` ke bot untuk melihat semua perintah. Ringkasnya:
+| Command | Alias | Format | Contoh |
+|---|---|---|---|
+| `/tugas` | `/pr` | `/tugas <mapel> \| <deskripsi> \| <deadline>` | `/tugas Matematika \| kerjakan hal 42 \| 2026-08-30` |
+| `/pengumuman` | | `/pengumuman <isi> \| hapus <tanggal>` | `/pengumuman Besok ulangan \| hapus 2026-08-30` |
+| `/acara` | `/event` | `/acara <nama> \| <tanggal> \| hapus <tanggal>` | `/acara Classmeet \| 2026-09-01` |
+| `/ultah` | `/ulangtahun` | `/ultah <nama> \| <tanggal lahir>` | `/ultah Budi Santoso \| 2010-05-17` |
+| `/edit` | `/ubah` | `/edit [jenis]` → pilih data → balas pesan bot dengan data baru | `/edit tugas` |
+| `/hapus` | | `/hapus [jenis]` → ketuk 🗑 → konfirmasi | `/hapus pengumuman` |
+| `/foto` | `/pending` | | `/foto` |
+| `/pelanggan` | `/subscriber` | | `/pelanggan` |
+| `/daftar` | `/list`, `/info` | | `/daftar` |
+| `/bantuan` | `/start`, `/help` | | `/bantuan` |
 
-```
-/tugas Matematika | kerjakan hal 42 | 2026-08-30
-/pengumuman Besok ulangan Matematika | hapus 2026-08-30
-/acara Classmeet | 2026-09-01
-/ultah Budi Santoso | 2010-05-17
-/daftar
-```
-
-Data yang masuk lewat bot langsung tampil di web dan mengirim notifikasi ke HP siswa yang sudah mengaktifkan notifikasi.
+Bagian `hapus <tanggal>` dan deskripsi tugas boleh dilewati. Tanggal memakai format `TAHUN-BULAN-TANGGAL`.
+`[jenis]` = `tugas`, `pengumuman`, `acara`, atau `ultah` (boleh dikosongkan, nanti bot menampilkan pilihan).
 
 ---
 

@@ -56,6 +56,14 @@ const CHANGELOG = [
 				text: "Tombol Hapus di panel admin sekarang selalu menanyakan konfirmasi dulu, supaya tidak terhapus karena salah pencet.",
 			},
 			{
+				type: "Baru",
+				text: "Bot Telegram bisa mengedit dan menghapus tugas, pengumuman, acara, dan ulang tahun lewat tombol (/edit, /hapus).",
+			},
+			{
+				type: "Baru",
+				text: "Bot Telegram: /foto menampilkan foto yang menunggu persetujuan, /pelanggan menampilkan jumlah HP yang mengaktifkan notifikasi.",
+			},
+			{
 				type: "Perubahan",
 				text: "Notifikasi lama di halaman Tugas & PR (yang hanya muncul selama tab terbuka) diganti dengan notifikasi push yang baru.",
 			},
