@@ -64,6 +64,10 @@ const CHANGELOG = [
 				text: "Bot Telegram: /foto menampilkan foto yang menunggu persetujuan, /pelanggan menampilkan jumlah HP yang mengaktifkan notifikasi.",
 			},
 			{
+				type: "Perbaikan",
+				text: "Website lebih mudah ditemukan di Google lewat pencarian seperti \"XI PPLG 3\", \"11 PPLG 3\", \"11 RPL 3\", atau \"SMK Media Informatika\" (METIK).",
+			},
+			{
 				type: "Perubahan",
 				text: "Notifikasi lama di halaman Tugas & PR (yang hanya muncul selama tab terbuka) diganti dengan notifikasi push yang baru.",
 			},

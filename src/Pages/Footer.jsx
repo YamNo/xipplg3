@@ -80,8 +80,8 @@ const Footer = () => {
 				<hr className="my-2 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
 				<div className="sm:flex sm:items-center sm:justify-between">
 					<div className="flex mt-4 justify-center sm:mt-0">
-						<p className="text-[0.7rem] text-white opacity-70">
-							© {new Date().getFullYear()} Kelas XI PPLG 3 | Di Kelola Oleh Siswa PPLG 3
+						<p className="text-[0.7rem] text-white opacity-70 text-center">
+							© {new Date().getFullYear()} Kelas XI PPLG 3 (11 PPLG 3 / 11 RPL 3) · SMK Media Informatika (METIK) | Dikelola oleh siswa PPLG 3
 						</p>
 					</div>
 				</div>

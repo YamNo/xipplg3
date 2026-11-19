@@ -47,7 +47,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html}', 'pwa-*.png', 'apple-touch-icon.png'],
         navigateFallback: '/index.html',
         // Permintaan ke API/webhook jangan pernah dilayani service worker.
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/(robots\.txt|sitemap\.xml)$/],
         cleanupOutdatedCaches: true,
         // Penangan notifikasi push (public/push-sw.js) supaya notif tetap
         // muncul walaupun website sedang ditutup.
